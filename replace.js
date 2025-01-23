@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         动态文本替换悬浮球
 // @namespace    http://yournamespace.com
-// @version      3.7
-// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, **修复新增条目 BUG，界面更紧凑**。
+// @version      3.8
+// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, 修复新增条目 BUG，界面更紧凑, 新增半透明模糊悬浮窗和按钮效果，更美观, **再次修复新增条目 BUG (v3.8 Bugfix)**。
 // @author       你的名字
 // @match        *://*/*
 // @grant        GM_addStyle
@@ -31,18 +31,18 @@
     // 立即执行页面替换，防止原文闪烁 (在添加样式和创建元素之前执行)
     replacePage();
 
-    // 定义 CSS 变量和样式 (美化版本 3.7 - 修复新增条目 BUG，界面更紧凑)
+    // 定义 CSS 变量和样式 (美化版本 3.8 - 新增半透明模糊悬浮窗和按钮效果)
     const styles = `
         :root {
             /* Dark Mode 默认主题色 */
             --bg-color: #121212;
-            --modal-bg-color: #222;
+            --modal-bg-color: rgba(34, 34, 34, 0.7); /* 半透明模态框背景 */
+            --button-bg-color: rgba(51, 51, 51, 0.6); /* 半透明按钮背景 */
             --text-color: #eee;
             --text-color-light: #ccc;
             --text-color-lighter: #aaa;
             --border-color: #555;
             --hover-bg-color: #444;
-            --button-bg-color: #333;
             --button-hover-bg-color: var(--hover-bg-color);
             --button-active-bg-color: #555;
             --button-text-color: var(--text-color);
@@ -122,12 +122,12 @@
         #choice-modal {
             position: fixed;
             z-index: 10000;
-            background-color: var(--modal-bg-color);
+            background-color: var(--modal-bg-color); /* 使用半透明背景色 */
             color: var(--text-color);
             border: 1px solid var(--border-color);
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            padding: 12px 16px; /* 稍微减小 choice-modal padding */
-            border-radius: 10px; /* 稍微减小 choice-modal border-radius */
+            padding: 12px 16px;
+            border-radius: 10px;
             display: none;
             transform-origin: top center;
             opacity: 0;
@@ -135,6 +135,8 @@
             transition: transform 0.3s ease-out, opacity 0.3s ease-out, background-color 0.3s ease-in-out, border-color 0.3s ease-in-out, color 0.3s ease-in-out;
             user-select: none;
              pointer-events: auto;
+             backdrop-filter: blur(8px); /* 添加模糊效果 */
+             -webkit-backdrop-filter: blur(8px); /* 兼容旧版 Safari */
         }
 
         #choice-modal.show {
@@ -149,14 +151,14 @@
         }
 
           #choice-modal button {
-             margin: 5px 6px; /* 稍微减小 choice-modal button margin */
-             padding: 8px 12px; /* 稍微减小 choice-modal button padding */
+             margin: 5px 6px;
+             padding: 8px 12px;
              cursor: pointer;
              border: none;
              border-radius: 8px;
-             background-color: var(--button-bg-color);
+             background-color: var(--button-bg-color); /* 使用半透明背景色 */
              color: var(--button-text-color);
-             font-size: 0.9em; /* 稍微减小 choice-modal button font-size */
+             font-size: 0.9em;
              transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out;
           }
            #choice-modal button:hover {
@@ -169,22 +171,24 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: var(--modal-bg-color);
+            background-color: var(--modal-bg-color); /* 使用半透明背景色 */
             color: var(--text-color);
             border: 1px solid var(--border-color);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            padding: 20px; /* 稍微减小 replacement-editor padding */
+            padding: 20px;
             z-index: 10001;
             display: none;
             max-height: 85vh;
             overflow-y: auto;
-            width: 520px; /* 稍微减小 replacement-editor 宽度 */
-            border-radius: 14px; /* 稍微减小 replacement-editor border-radius */
+            width: 520px;
+            border-radius: 14px;
             display: flex;
             flex-direction: column;
             user-select: none;
             pointer-events: auto;
             transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out, color 0.3s ease-in-out;
+             backdrop-filter: blur(10px); /* 添加模糊效果，程度稍强 */
+             -webkit-backdrop-filter: blur(10px); /* 兼容旧版 Safari */
          }
          #replacement-editor.hide {
             opacity: 0;
@@ -194,30 +198,30 @@
          #replacement-editor h2 {
             text-align: center;
             margin-top: 0;
-            margin-bottom: 12px; /* 稍微减小 h2 margin-bottom */
-            font-size: 1.1em; /* 稍微减小 h2 font-size */
+            margin-bottom: 12px;
+            font-size: 1.1em;
             color: var(--text-color-light);
          }
         #replacement-editor .replacement-row {
            display: flex;
-           margin-bottom: 6px; /* 进一步减小 replacement-row margin-bottom */
+           margin-bottom: 6px;
             align-items: baseline;
         }
         #replacement-editor label {
-             margin-right: 4px; /* 稍微减小 label margin-right */
-             flex-basis: 50px; /* 稍微减小 label flex-basis */
+             margin-right: 4px;
+             flex-basis: 50px;
              text-align: right;
              white-space: nowrap;
              color: var(--text-color-light);
-             font-size: 0.85em; /* 进一步减小 label font-size */
-             line-height: 1.4; /* 稍微减小 label line-height */
+             font-size: 0.85em;
+             line-height: 1.4;
         }
         #replacement-editor input {
            flex-grow: 1;
-           padding: 6px; /* 稍微减小 input padding */
+           padding: 6px;
            border: 1px solid var(--border-color);
-           border-radius: 6px; /* 稍微减小 input border-radius */
-           font-size: 0.85em; /* 进一步减小 input font-size */
+           border-radius: 6px;
+           font-size: 0.85em;
            color: var(--text-color);
            background-color: #444;
            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out, background-color 0.2s ease-in-out;
@@ -234,13 +238,13 @@
           #replacement-editor button,
           #replacement-editor .button-pagination-container button,
           #choice-modal button{
-            padding: 7px 10px; /* 进一步减小 button padding */
+            padding: 7px 10px;
              cursor: pointer;
              border: none;
-             border-radius: 7px; /* 稍微减小 button border-radius */
-             background-color: var(--button-bg-color);
+             border-radius: 7px;
+             background-color: var(--button-bg-color); /* 使用半透明背景色 */
               color: var(--button-text-color);
-              font-size: 0.85em; /* 进一步减小 button font-size */
+              font-size: 0.85em;
               transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out;
           }
           #replacement-editor button:hover,
@@ -254,19 +258,19 @@
                display: flex;
                justify-content: space-around;
                align-items: center;
-               margin-top: 12px; /* 稍微减小 button-pagination-container margin-top */
-               margin-bottom: 12px; /* 稍微减小 button-pagination-container margin-bottom */
+               margin-top: 12px;
+               margin-bottom: 12px;
             }
 
            #replacement-editor .delete-button {
               background-color: var(--button-delete-bg-color);
               color: white;
              border-radius: 50%;
-             padding: 3px 5px; /* 进一步减小 delete-button padding */
+             padding: 3px 5px;
              border: none;
-              margin-left: 4px; /* 稍微减小 delete-button margin-left */
+              margin-left: 4px;
             cursor: pointer;
-            font-size: 0.7em; /* 进一步减小 delete-button font-size */
+            font-size: 0.7em;
             line-height: 1;
             box-shadow: 0 1px 3px rgba(0,0,0,0.2);
             transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out;
@@ -279,17 +283,17 @@
             #replacement-editor .scrollable-container {
                overflow-x: hidden;
               overflow-y: auto;
-                max-height: 320px; /* 稍微减小 scrollable-container max-height */
-                padding-right: 8px; /* 稍微减小 scrollable-container padding-right */
-                border-radius: 10px; /* 稍微减小 scrollable-container border-radius */
+                max-height: 320px;
+                padding-right: 8px;
+                border-radius: 10px;
                 transition: background-color 0.3s ease-in-out;
                  background-color: transparent;
             }
             #replacement-editor .scrollable-content {
                display: flex;
                 flex-direction: column;
-                padding-right: 8px; /* 稍微减小 scrollable-content padding-right */
-                padding-bottom: 6px; /* 稍微减小 scrollable-content padding-bottom */
+                padding-right: 8px;
+                padding-bottom: 6px;
             }
 
 
@@ -298,13 +302,13 @@
 
 
         #replacement-editor .pagination-container button {
-            margin: 0 5px; /* 稍微减小 pagination-container button margin */
-            padding: 6px 9px; /* 进一步减小 pagination-container button padding */
-            border-radius: 6px; /* 稍微减小 pagination-container button border-radius */
-            background-color: var(--button-bg-color);
+            margin: 0 5px;
+            padding: 6px 9px;
+            border-radius: 6px;
+            background-color: var(--button-bg-color); /* 使用半透明背景色 */
             border: none;
             color: var(--text-color-light);
-            font-size: 0.8em; /* 进一步减小 pagination-container button font-size */
+            font-size: 0.8em;
             transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, transform 0.2s ease-in-out, color 0.2s ease-in-out;
         }
          #replacement-editor .pagination-container button:hover {
@@ -314,24 +318,24 @@
         #replacement-editor .pagination-container button:disabled {
             opacity: 0.6;
             cursor: default;
-            background-color: var(--button-bg-color);
+            background-color: var(--button-bg-color); /* 使用半透明背景色 */
             color: var(--text-color-lighter);
          }
 
        #replacement-editor .editor-buttons-container {
          display: flex;
          justify-content: center;
-         gap: 12px; /* 稍微减小 editor-buttons-container gap */
-         margin-top: 15px; /* 稍微减小 editor-buttons-container margin-top */
-         margin-bottom: 15px; /* 稍微减小 editor-buttons-container margin-bottom */
+         gap: 12px;
+         margin-top: 15px;
+         margin-bottom: 15px;
        }
        #replacement-editor .editor-buttons-container button {
          display: inline-block;
          margin: 0;
-         padding: 10px 16px; /* 进一步减小 editor-buttons-container button padding */
-         border-radius: 10px; /* 稍微减小 editor-buttons-container button border-radius */
-         font-size: 0.9em; /* 稍微减小 editor-buttons-container button font-size */
-         background-color: var(--button-bg-color);
+         padding: 10px 16px;
+         border-radius: 10px;
+         font-size: 0.9em;
+         background-color: var(--button-bg-color); /* 使用半透明背景色 */
          color: var(--button-text-color);
          border: none;
          transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out;
@@ -458,6 +462,8 @@
                 max-width: 280px;
                 padding: 10px 12px;
                 font-size: 0.9em;
+                backdrop-filter: blur(6px); /* 移动端模糊程度稍弱 */
+                -webkit-backdrop-filter: blur(6px); /* 兼容旧版 Safari */
             }
             #choice-modal button {
                 padding: 6px 10px;
@@ -474,20 +480,22 @@
                 max-height: 80vh;
                 padding: 10px;
                 font-size: 0.85em;
+                backdrop-filter: blur(8px); /* 移动端模糊程度 */
+                -webkit-backdrop-filter: blur(8px); /* 兼容旧版 Safari */
             }
             #replacement-editor .replacement-row {
-                margin-bottom: 3px; /* 进一步减小移动端行间距 */
+                margin-bottom: 3px;
                 align-items: baseline;
             }
             #replacement-editor label {
                 flex-basis: 30px;
-                font-size: 0.7em; /* 进一步减小移动端 label font-size */
+                font-size: 0.7em;
                 margin-right: 1px;
-                line-height: 1.2; /* 进一步减小移动端 label line-height */
+                line-height: 1.2;
             }
             #replacement-editor input {
-                padding: 3px 4px; /* 进一步减小移动端 input padding */
-                font-size: 0.7em; /* 进一步减小移动端 input font-size */
+                padding: 3px 4px;
+                font-size: 0.7em;
                 border-radius: 3px;
                 min-width: 0;
             }
@@ -495,23 +503,23 @@
             #replacement-editor .button-pagination-container button,
             #replacement-editor .editor-buttons-container button,
             #replacement-editor .pagination-container button {
-                padding: 4px 6px; /* 进一步减小移动端按钮 padding */
-                font-size: 0.7em; /* 进一步减小移动端按钮 font-size */
+                padding: 4px 6px;
+                font-size: 0.7em;
                 margin: 1px;
-                border-radius: 4px; /* 稍微减小移动端按钮圆角 */
+                border-radius: 4px;
             }
             #replacement-editor .delete-button {
-                padding: 1px 2px; /* 进一步减小移动端删除按钮 padding */
-                font-size: 0.5em; /* 进一步减小移动端删除按钮 font-size */
+                padding: 1px 2px;
+                font-size: 0.5em;
                 margin-left: 1px;
             }
             #replacement-editor .scrollable-container {
-                padding-right: 4px; /* 稍微减小移动端滚动区域 padding-right */
-                border-radius: 6px; /* 稍微减小移动端滚动区域 border-radius */
+                padding-right: 4px;
+                border-radius: 6px;
             }
              /* 滚动条美化 (Webkit based browsers) - 手机端 恢复极窄滚动条 */
             #replacement-editor .scrollable-container::-webkit-scrollbar {
-                width: 4px; /* 进一步减小移动端滚动条宽度 */
+                width: 4px;
             }
 
             #replacement-editor .scrollable-container::-webkit-scrollbar-track {
@@ -534,7 +542,7 @@
     GM_addStyle(styles);
 
 
-    // ... (JavaScript 代码部分，v3.7 版本修复新增条目 BUG)
+    // JavaScript 代码部分 (v3.8 Bugfix - 关键修复：移动 addButton 事件监听器绑定位置)
         // 创建悬浮球容器元素 (新的容器元素)
     let floatingBallContainer = document.createElement('div');
     floatingBallContainer.id = 'floating-ball-container';
@@ -598,6 +606,8 @@
     `;
     document.body.appendChild(replacementEditor);
 
+    // 获取 "新增条目" 按钮 (在 showReplacementEditor 函数外部获取)
+    const addButton = replacementEditor.querySelector('#add-rule');
 
 
     let timeoutId;
@@ -789,43 +799,14 @@
 
 
         // 添加新增条目按钮 (修复 BUG，确保每次点击只添加一个条目)
-        const addButton = replacementEditor.querySelector('#add-rule');
-        addButton.addEventListener('click', function () {
-            console.log("新增条目按钮被点击"); // Debug 日志
-            const replacementRow = document.createElement('div');
-            replacementRow.className = 'replacement-row';
-            // 原文输入框
-            const originalLabel = document.createElement('label');
-            originalLabel.textContent = '原文：';
-            replacementRow.appendChild(originalLabel);
-            const originalInput = document.createElement('input');
-            originalInput.placeholder = '请输入要替换的原文'; // Placeholder 提示
-            replacementRow.appendChild(originalInput);
-            // 替换文输入框
-            const translatedLabel = document.createElement('label');
-            translatedLabel.textContent = '替换：';
-            replacementRow.appendChild(translatedLabel);
-            const translatedInput = document.createElement('input');
-            translatedInput.placeholder = '请输入替换后的文本'; // Placeholder 提示
-            replacementRow.appendChild(translatedInput);
-            // 删除按钮
-            const deleteButton = document.createElement('button');
-            deleteButton.textContent = 'X';
-            deleteButton.className = 'delete-button';
-            deleteButton.addEventListener('click', function () {
-                scrollableContent.removeChild(replacementRow);
-                updateReplacementTable();
-                replacePage();
-            });
-            replacementRow.appendChild(deleteButton);
-            scrollableContent.appendChild(replacementRow); // **改为 appendChild，添加到末尾**
-
-             // 重新计算总页数并更新分页按钮状态 (新增条目后页数可能增加)
-            const updatedTotalRules = Object.keys(replacementTable).length;
-            totalPages = Math.ceil(updatedTotalRules / rulesPerPage) || 1;
-            updatePaginationButtons();
-            // 移除 displayPage(currentPage);  不再强制刷新当前页
-        });
+        // **关键修复：将事件监听器绑定代码移动到 showReplacementEditor 函数外部**
+        // const addButton = replacementEditor.querySelector('#add-rule'); // **移动到 showReplacementEditor 函数外部**
+        // addButton.addEventListener('click', function () { // **移动到 showReplacementEditor 函数外部**
+        //     console.log("新增条目按钮被点击"); // Debug 日志
+        //     const replacementRow = document.createElement('div');
+        //     replacementRow.className = 'replacement-row';
+        //     // ... (省略添加条目的代码，保持不变)
+        // });
 
 
         // 下一页按钮 (保持不变)
@@ -1022,6 +1003,49 @@
     observer.observe(document.body, config);
 
     startFadeTimer();
+
+    // **关键修复： "新增条目" 按钮的事件监听器绑定，移动到 showReplacementEditor 函数外部，脚本初始化时执行一次**
+    addButton.addEventListener('click', function () {
+        console.log("新增条目按钮被点击"); // Debug 日志
+        const replacementRow = document.createElement('div');
+        replacementRow.className = 'replacement-row';
+        // 原文输入框
+        const originalLabel = document.createElement('label');
+        originalLabel.textContent = '原文：';
+        replacementRow.appendChild(originalLabel);
+        const originalInput = document.createElement('input');
+        originalInput.placeholder = '请输入要替换的原文'; // Placeholder 提示
+        replacementRow.appendChild(originalInput);
+        // 替换文输入框
+        const translatedLabel = document.createElement('label');
+        translatedLabel.textContent = '替换：';
+        replacementRow.appendChild(translatedLabel);
+        const translatedInput = document.createElement('input');
+        translatedInput.placeholder = '请输入替换后的文本'; // Placeholder 提示
+        replacementRow.appendChild(translatedInput);
+        // 删除按钮
+        const deleteButton = document.createElement('button');
+        deleteButton.textContent = 'X';
+        deleteButton.className = 'delete-button';
+        deleteButton.addEventListener('click', function () {
+            const scrollableContent = replacementEditor.querySelector('.scrollable-content'); // 需要在这里获取 scrollableContent
+            scrollableContent.removeChild(replacementRow);
+            updateReplacementTable();
+            replacePage();
+        });
+        replacementRow.appendChild(deleteButton);
+        const scrollableContent = replacementEditor.querySelector('.scrollable-content'); // 需要在这里获取 scrollableContent
+        scrollableContent.appendChild(replacementRow); // **改为 appendChild，添加到末尾**
+
+         // 重新计算总页数并更新分页按钮状态 (新增条目后页数可能增加)
+        const updatedTotalRules = Object.keys(replacementTable).length;
+        const totalPages = Math.ceil(updatedTotalRules / rulesPerPage) || 1;
+        const updatePaginationButtons = replacementEditor.querySelector('#add-rule').closest('.button-pagination-container').querySelector('#prev-page').closest('#replacement-editor').querySelector('#updatePaginationButtons'); // 获取 updatePaginationButtons 函数引用 (如果需要，这里简化了，实际代码中 updatePaginationButtons 函数应该在作用域内可访问)
+        if(updatePaginationButtons) { // 检查函数是否存在，避免报错
+            updatePaginationButtons();
+        }
+        // 移除 displayPage(currentPage);  不再强制刷新当前页
+    });
 
 
 })();
