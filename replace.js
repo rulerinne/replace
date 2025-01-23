@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         动态文本替换悬浮球
 // @namespace    http://yournamespace.com
-// @version      4.4e
-// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, 修复新增条目 BUG，界面更紧凑, 新增半透明模糊悬浮窗和按钮效果，更美观, 再次修复新增条目 BUG (v3.8 Bugfix), 美化删除按钮样式为半透明黑色按钮, 全局字体颜色更新为浅色白色系 (v3.9 Font Update), 新增右键选中文本快速替换功能 (v4.0 New Feature), 修复新增条目报错，增强动画效果，美化按钮样式 (v4.1 Animation & Button Update), 新增右键替换开关，可禁用默认右键菜单 (v4.2 Toggle Switch Feature), 全面增强弹出窗口和按钮动画效果 (v4.3 Animation Overhaul), 美化滑动条，调整输入框宽度，固定编辑器窗口大小 (v4.4 UI Refinements), 修复匹配不严格问题，实现全词严格匹配 (v4.4c Strict Matching Fix), 添加 null 检查，增强代码健壮性，尝试解决 `nodeType` is null 错误 (v4.4d Null Check), **在文本替换规则编辑界面右下角新增右键替换开关 (v4.4e Editor Switch)**.
+// @version      4.4f
+// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, 修复新增条目 BUG，界面更紧凑, 新增半透明模糊悬浮窗和按钮效果，更美观, 再次修复新增条目 BUG (v3.8 Bugfix), 美化删除按钮样式为半透明黑色按钮, 全局字体颜色更新为浅色白色系 (v3.9 Font Update), 新增右键选中文本快速替换功能 (v4.0 New Feature), 修复新增条目报错，增强动画效果，美化按钮样式 (v4.1 Animation & Button Update), 新增右键替换开关，可禁用默认右键菜单 (v4.2 Toggle Switch Feature), 全面增强弹出窗口和按钮动画效果 (v4.3 Animation Overhaul), 美化滑动条，调整输入框宽度，固定编辑器窗口大小 (v4.4 UI Refinements), 修复匹配不严格问题，实现全词严格匹配 (v4.4c Strict Matching Fix), 添加 null 检查，增强代码健壮性，尝试解决 `nodeType` is null 错误 (v4.4d Null Check), 在文本替换规则编辑界面右下角新增右键替换开关 (v4.4e Editor Switch), **全面适配手机端网页浏览，优化悬浮窗显示 (v4.4f Mobile Adaption)**.
 // @author       你的名字
 // @match        *://*/*
 // @grant        GM_addStyle
@@ -521,6 +521,46 @@
              #editor-quick-replace-switch-container { /* v4.4e 移动端调整 */
                 bottom: 8px;
                 right: 8px;
+             }
+             #replacement-editor { /* v4.4f 移动端编辑器窗口整体样式调整 */
+                width: 90%; /* v4.4f 百分比宽度 */
+                max-width: 360px; /* v4.4f 最大宽度限制 */
+                padding: 15px; /* v4.4f 减小 padding */
+                font-size: 0.9em; /* v4.4f 减小字体大小 */
+             }
+             #replacement-editor h2 { /* v4.4f 移动端标题字体大小 */
+                 font-size: 1.05em;
+             }
+             #replacement-editor label { /* v4.4f 移动端 label 字体大小 */
+                 font-size: 0.8em;
+             }
+             #replacement-editor input { /* v4.4f 移动端 input 字体和 padding */
+                 font-size: 0.8em;
+                 padding: 5px;
+             }
+             #replacement-editor button, /* v4.4f 移动端 按钮字体和 padding */
+             #replacement-editor .button-pagination-container button,
+             #replacement-editor .editor-buttons-container button,
+             #replacement-editor .pagination-container button,
+             #quick-replace-modal button {
+                 padding: 6px 10px;
+                 font-size: 0.85em;
+             }
+             #replacement-editor .editor-buttons-container { /* v4.4f 移动端 编辑按钮容器 margin-bottom 减小 */
+                 padding-bottom: 10px;
+             }
+             #replacement-editor .button-pagination-container { /* v4.4f 移动端 分页按钮容器 padding 减小 */
+                 padding-top: 6px;
+                 padding-bottom: 6px;
+             }
+             #quick-replace-modal { /* v4.4f 移动端 快速替换 modal 样式 */
+                 padding: 10px 15px; /* v4.4f 减小 padding */
+             }
+             #quick-replace-modal h2 { /* v4.4f 移动端 快速替换 modal 标题字体大小 */
+                 margin-bottom: 10px;
+             }
+             #quick-replace-modal input { /* v4.4f 移动端 快速替换 modal 输入框 margin-bottom 减小 */
+                 margin-bottom: 10px;
              }
         }
 
