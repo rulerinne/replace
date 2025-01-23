@@ -1,12 +1,10 @@
 // ==UserScript==
 // @name         动态文本替换悬浮球
 // @namespace    http://yournamespace.com
-// @version      2.6
-// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配。
+// @version      2.7
+// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，手机端规则列表优化显示。
 // @author       你的名字
 // @match        *://*/*
-// @updateURL   https://github.com/rulerinne/replace/blob/main/replace.js
-// @downloadURL https://github.com/rulerinne/replace/blob/main/replace.js
 // @grant        GM_addStyle
 // @grant        GM_setValue
 // @grant        GM_getValue
@@ -29,7 +27,7 @@
     const originalTextMap = new WeakMap();
     const replacedNodes = new WeakSet(); // 保存已替换的节点，防止重复替换
 
-     // 添加 CSS 样式 (美化版本 2.6 - 手机端页面适配)
+     // 添加 CSS 样式 (美化版本 2.7 - 手机端规则列表优化显示)
     GM_addStyle(`
         #floating-ball-container {
             position: fixed;
@@ -382,72 +380,73 @@
         /* 媒体查询，针对小屏幕设备（例如手机） */
         @media (max-width: 768px) {
             #floating-ball-container {
-                width: 40px; /* 缩小悬浮球 */
+                width: 40px;
                 height: 40px;
-                top: 10px;      /* 调整位置 */
+                top: 10px;
                 right: 10px;
             }
             #floating-ball {
-                font-size: 20px; /* 缩小字体 */
+                font-size: 20px;
             }
             #toggle-indicator {
-                width: 10px;   /* 缩小指示器 */
+                width: 10px;
                 height: 10px;
                 top: 4px;
                 right: 4px;
             }
             #choice-modal {
-                width: 90%;       /* 宽度占据 90% 屏幕 */
-                max-width: 300px; /* 最大宽度限制 */
+                width: 90%;
+                max-width: 300px;
                 padding: 12px 15px;
-                font-size: 0.95em; /* 稍微缩小字体 */
+                font-size: 0.95em;
             }
             #choice-modal button {
-                padding: 8px 12px; /* 按钮内边距 */
-                font-size: 0.9em;  /* 按钮字体 */
+                padding: 8px 12px;
+                font-size: 0.9em;
                 margin: 5px 6px;
             }
             #replacement-editor {
-                width: 95%;        /* 编辑器宽度占据 95% 屏幕 */
-                max-width: 400px;  /* 编辑器最大宽度限制 */
+                width: 95%;
+                max-width: 400px;
                 padding: 20px;
-                font-size: 0.9em;  /* 稍微缩小字体 */
+                font-size: 0.9em;
             }
             #replacement-editor .replacement-row {
-                flex-direction: column; /* 垂直排列 label 和 input */
-                align-items: stretch;   /* 拉伸对齐 */
+                flex-direction: row; /* 恢复横向排列 */
+                align-items: center;   /* 垂直居中对齐 */
             }
             #replacement-editor label {
-                text-align: left;      /* label 左对齐 */
-                margin-bottom: 5px;    /* label 下边距 */
-                flex-basis: auto;      /* 自动宽度 */
+                text-align: right;      /* 恢复 label 右对齐 */
+                margin-bottom: 0;    /* 移除 label 下边距 */
+                flex-basis: 80px;      /* 恢复 label 宽度 */
+                margin-right: 8px;
             }
             #replacement-editor input {
-                padding: 10px;        /* 输入框内边距 */
-                font-size: 1em;       /* 输入框字体 */
-                margin-bottom: 8px;
+                padding: 8px;        /* 恢复输入框内边距 */
+                font-size: 0.95em;       /* 恢复输入框字体 */
+                margin-bottom: 0;
             }
             #replacement-editor button,
             #replacement-editor .button-pagination-container button,
             #replacement-editor .editor-buttons-container button,
             #replacement-editor .pagination-container button {
-                padding: 10px 14px;    /* 编辑器按钮内边距 */
-                font-size: 0.9em;      /* 编辑器按钮字体 */
+                padding: 10px 14px;
+                font-size: 0.9em;
                 margin: 4px;
             }
             #replacement-editor .delete-button {
-                padding: 3px 6px;    /* 删除按钮内边距 */
+                padding: 3px 6px;
                 font-size: 0.75em;
                 margin-left: 5px;
             }
             #replacement-editor .scrollable-container {
-                max-height: 200px;   /* 缩小滚动区域高度 */
+                max-height: 200px;
             }
         }
 
 
     `);
-    // ... (JavaScript 代码部分保持不变，与 v2.5 版本一致)
+    // ... (JavaScript 代码部分保持不变，与 v2.7 版本一致)
         // 创建悬浮球容器元素 (新的容器元素)
     let floatingBallContainer = document.createElement('div');
     floatingBallContainer.id = 'floating-ball-container';
