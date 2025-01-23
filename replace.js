@@ -5,8 +5,8 @@
 // @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配。
 // @author       你的名字
 // @match        *://*/*
-// @updateURL   https://yourdomain.com/yourscript.user.js  // 替换为你脚本的 URL
-// @downloadURL https://yourdomain.com/yourscript.user.js  // 替换为你脚本的 URL
+// @updateURL   https://github.com/rulerinne/replace/blob/main/replace.js
+// @downloadURL https://github.com/rulerinne/replace/blob/main/replace.js
 // @grant        GM_addStyle
 // @grant        GM_setValue
 // @grant        GM_getValue
