@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         动态文本替换悬浮球
 // @namespace    http://yournamespace.com
-// @version      3.9
-// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, 修复新增条目 BUG，界面更紧凑, 新增半透明模糊悬浮窗和按钮效果，更美观, 再次修复新增条目 BUG (v3.8 Bugfix), 美化删除按钮样式为半透明黑色按钮, **全局字体颜色更新为浅色白色系 (v3.9 Font Update)**。
+// @version      4.0
+// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, 修复新增条目 BUG，界面更紧凑, 新增半透明模糊悬浮窗和按钮效果，更美观, 再次修复新增条目 BUG (v3.8 Bugfix), 美化删除按钮样式为半透明黑色按钮, 全局字体颜色更新为浅色白色系 (v3.9 Font Update), **新增右键选中文本快速替换功能 (v4.0 New Feature)**。
 // @author       你的名字
 // @match        *://*/*
 // @grant        GM_addStyle
@@ -31,7 +31,7 @@
     // 立即执行页面替换，防止原文闪烁 (在添加样式和创建元素之前执行)
     replacePage();
 
-    // 定义 CSS 变量和样式 (美化版本 3.9 - 全局字体颜色更新为浅色白色系)
+    // 定义 CSS 变量和样式 (美化版本 4.0 - 新增右键选中文本快速替换功能)
     const styles = `
         :root {
             /* Dark Mode 默认主题色 - 全局浅色字体调整 */
@@ -423,24 +423,48 @@
           transform: translateX(18px);
       }
 
-       /* 滚动条美化 (Webkit based browsers) - 电脑端 恢复稍宽滚动条 */
-        #replacement-editor .scrollable-container::-webkit-scrollbar {
-            width: 8px;
+       /* 快速替换模态框样式 */
+        #quick-replace-modal {
+            position: fixed;
+            z-index: 10002; /* 比 #replacement-editor 更高 */
+            background-color: var(--modal-bg-color); /* 使用半透明背景色 */
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            padding: 15px 20px;
+            border-radius: 12px;
+            display: none; /* 初始隐藏 */
+            min-width: 280px;
+            max-width: 400px;
+            backdrop-filter: blur(10px); /* 添加模糊效果 */
+            -webkit-backdrop-filter: blur(10px); /* 兼容旧版 Safari */
+        }
+        #quick-replace-modal h2 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 15px;
+            font-size: 1.1em;
+            color: var(--text-color-light);
+        }
+        #quick-replace-modal input {
+            width: calc(100% - 12px); /* 考虑 padding */
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 0.9em;
+            color: var(--text-color);
+            background-color: #444;
+            margin-bottom: 15px;
+        }
+        #quick-replace-modal .editor-buttons-container { /* 复用按钮容器样式 */
+            margin-top: 0;
+            margin-bottom: 0;
+        }
+        #quick-replace-modal button { /* 复用按钮样式 */
+             padding: 9px 14px;
+             font-size: 0.9em;
         }
 
-        #replacement-editor .scrollable-container::-webkit-scrollbar-track {
-            background-color: var(--scroll-track-color);
-            border-radius: 10px;
-        }
-
-        #replacement-editor .scrollable-container::-webkit-scrollbar-thumb {
-            background-color: var(--scroll-thumb-color);
-            border-radius: 10px;
-        }
-
-        #replacement-editor .scrollable-container::-webkit-scrollbar-thumb:hover {
-            background-color: var(--scroll-thumb-hover-color);
-        }
 
         /* 媒体查询，针对小屏幕设备（例如手机） - 保持极致紧凑样式 */
         @media (max-width: 768px) {
@@ -450,12 +474,29 @@
             #replacement-editor .button-pagination-container button,
             #replacement-editor .editor-buttons-container button,
             #replacement-editor .pagination-container button,
-            #choice-modal button {
+            #choice-modal button,
+            #quick-replace-modal button { /* 移动端快速替换模态框按钮 */
                 color: var(--text-color); /* 强制设置移动端字体颜色为浅色白色 */
             }
             #replacement-editor input::placeholder { /*  移动端输入框 placeholder 颜色  */
                 color: var(--text-color-light); /*  辅助文本颜色，placeholder  */
             }
+             #quick-replace-modal { /* 移动端快速替换模态框样式 */
+                width: 90%;
+                max-width: 300px;
+                padding: 12px 15px;
+                font-size: 0.85em;
+                backdrop-filter: blur(8px); /* 移动端模糊程度 */
+                -webkit-backdrop-filter: blur(8px); /* 兼容旧版 Safari */
+             }
+            #quick-replace-modal input { /* 移动端快速替换模态框输入框 */
+                padding: 6px;
+                font-size: 0.8em;
+            }
+             #quick-replace-modal button { /* 移动端快速替换模态框按钮 */
+                 padding: 7px 12px;
+                 font-size: 0.8em;
+             }
 
 
             #floating-ball-container {
@@ -561,10 +602,7 @@
     GM_addStyle(styles);
 
 
-    // JavaScript 代码部分 (v3.9 - 字体颜色更新，JavaScript 代码无需修改)
-        // ... (JavaScript 代码与 v3.9 版本一致，无需修改)
-        // ... (保持与之前的 v3.9 版本 JavaScript 代码相同)
-        // ... (此处省略 JavaScript 代码，请复制 v3.9 版本的 JavaScript 代码部分)
+    // JavaScript 代码部分 (v4.0 - 新增右键选中文本快速替换功能)
         // 创建悬浮球容器元素 (新的容器元素)
     let floatingBallContainer = document.createElement('div');
     floatingBallContainer.id = 'floating-ball-container';
@@ -630,6 +668,20 @@
 
     // 获取 "新增条目" 按钮 (在 showReplacementEditor 函数外部获取)
     const addButton = replacementEditor.querySelector('#add-rule');
+
+    // 创建快速替换模态框 (v4.0 新增)
+    let quickReplaceModal = document.createElement('div');
+    quickReplaceModal.id = 'quick-replace-modal';
+    quickReplaceModal.style.display = 'none'; // 初始隐藏
+    quickReplaceModal.innerHTML = `
+        <h2>替换选中文本</h2>
+        <input type="text" placeholder="替换为..." id="quick-replace-input">
+        <div class="editor-buttons-container">
+            <button id="quick-replace-ok-button">确定</button>
+            <button id="quick-replace-cancel-button">取消</button>
+        </div>
+    `;
+    document.body.appendChild(quickReplaceModal);
 
 
     let timeoutId;
@@ -1068,6 +1120,62 @@
             updatePaginationButtons();
         }
         // 移除 displayPage(currentPage);  不再强制刷新当前页
+    });
+
+
+    // v4.0 新增：监听 contextmenu 事件 (右键菜单事件)
+    document.addEventListener('contextmenu', function(event) {
+        const selectedText = window.getSelection().toString().trim();
+        if (selectedText) {
+            // 可以选择阻止默认右键菜单 event.preventDefault();  但这里为了更贴近用户习惯，不阻止默认菜单，只是添加功能
+
+            // 模拟添加一个“替换”菜单项 (实际是利用用户点击事件判断)
+            // 可以在右键菜单的合适位置，告知用户有“替换”功能，例如在菜单底部添加说明文字
+            // 这里为了简化，直接在点击右键后，如果选中了文本，就立即显示快速替换模态框
+
+            showQuickReplaceModal(selectedText, event.clientX, event.clientY); // 显示快速替换模态框
+        }
+    });
+
+    // v4.0 新增：显示快速替换模态框
+    function showQuickReplaceModal(selectedText, x, y) {
+        const modal = document.getElementById('quick-replace-modal');
+        const input = modal.querySelector('#quick-replace-input');
+        input.value = ""; // 清空上次输入的内容
+        modal.style.left = x + 'px';
+        modal.style.top = y + 'px';
+        modal.style.display = 'block';
+        modal.selectedText = selectedText; // 存储选中的文本到模态框对象
+
+        // 聚焦输入框，方便用户直接输入
+        input.focus();
+    }
+
+    // v4.0 新增：隐藏快速替换模态框
+    function hideQuickReplaceModal() {
+        const modal = document.getElementById('quick-replace-modal');
+        modal.style.display = 'none';
+    }
+
+    // v4.0 新增：快速替换模态框 - "确定" 按钮事件监听器
+    document.getElementById('quick-replace-ok-button').addEventListener('click', function() {
+        const modal = document.getElementById('quick-replace-modal');
+        const inputText = modal.querySelector('#quick-replace-input').value.trim();
+        const originalText = modal.selectedText; // 从模态框对象中获取选中文本
+
+        if (originalText && inputText) {
+            replacementTable[originalText] = inputText; // 添加到替换规则表
+            GM_setValue(storageKey, replacementTable); // 保存规则
+            replacePage(); // 立即生效替换
+            hideQuickReplaceModal(); // 关闭模态框
+        } else {
+            alert("请输入替换内容！"); // 可选：提示用户输入替换内容
+        }
+    });
+
+    // v4.0 新增：快速替换模态框 - "取消" 按钮事件监听器
+    document.getElementById('quick-replace-cancel-button').addEventListener('click', function() {
+        hideQuickReplaceModal(); // 关闭模态框
     });
 
 
