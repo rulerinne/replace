@@ -2,7 +2,7 @@
 // @name         动态文本替换悬浮球
 // @namespace    http://yournamespace.com
 // @version      2.7
-// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，手机端规则列表优化显示。
+// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量。
 // @author       你的名字
 // @match        *://*/*
 // @grant        GM_addStyle
@@ -27,7 +27,7 @@
     const originalTextMap = new WeakMap();
     const replacedNodes = new WeakSet(); // 保存已替换的节点，防止重复替换
 
-     // 添加 CSS 样式 (美化版本 2.7 - 手机端规则列表优化显示)
+     // 添加 CSS 样式 (美化版本 2.7 - 手机端紧凑横向规则，限制显示数量)
     GM_addStyle(`
         #floating-ball-container {
             position: fixed;
@@ -156,23 +156,23 @@
          }
         #replacement-editor .replacement-row {
            display: flex;
-           margin-bottom: 12px;
+           margin-bottom: 8px; /* 稍微减小行间距 */
             align-items: center;
         }
         #replacement-editor label {
-             margin-right: 8px;
-             flex-basis: 80px;
+             margin-right: 4px; /* 稍微减小 label 右边距 */
+             flex-basis: 60px; /* 缩小 label 宽度 */
              text-align: right;
              white-space: nowrap;
              color: #555;
-             font-size: 0.95em;
+             font-size: 0.9em; /* 稍微缩小 label 字体 */
          }
          #replacement-editor input {
            flex-grow: 1;
-           padding: 8px;
+           padding: 6px; /* 稍微减小 input 内边距 */
            border: 1px solid #eee;
            border-radius: 6px;
-           font-size: 0.95em;
+           font-size: 0.9em; /* 稍微缩小 input 字体 */
            color: #444;
            background-color: #fff;
            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
@@ -184,13 +184,13 @@
              outline: none;
          }
           #replacement-editor button {
-            padding: 10px 16px;
+            padding: 8px 12px; /* 稍微减小 button 内边距 */
              cursor: pointer;
              border: none;
              border-radius: 8px;
              background-color: #f0f0f0;
               color: #333;
-              font-size: 0.95em;
+              font-size: 0.9em; /* 稍微缩小 button 字体 */
               transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
           }
           #replacement-editor button:hover {
@@ -202,12 +202,12 @@
                display: flex;
                justify-content: space-around;
                align-items: center;
-               margin-top: 15px;
-               margin-bottom: 15px;
+               margin-top: 10px; /* 稍微减小 上边距 */
+               margin-bottom: 10px; /* 稍微减小 下边距 */
             }
             #replacement-editor .button-pagination-container button{
               background-color: #e0e0e0;
-                padding: 10px 16px;
+                padding: 8px 12px; /* 稍微减小 分页按钮内边距 */
              }
             #replacement-editor .button-pagination-container button:hover{
                background-color: #d0d0d0;
@@ -216,11 +216,11 @@
               background-color: #f44336;
               color: white;
              border-radius: 50%;
-             padding: 4px 8px;
+             padding: 3px 6px;
              border: none;
-              margin-left: 8px;
+              margin-left: 4px; /* 稍微减小 删除按钮 左边距 */
             cursor: pointer;
-            font-size: 0.85em;
+            font-size: 0.75em;
             line-height: 1;
             box-shadow: 0 1px 3px rgba(0,0,0,0.2);
             transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
@@ -250,13 +250,13 @@
 
 
         #replacement-editor .pagination-container button {
-            margin: 0 6px;
-            padding: 8px 12px;
+            margin: 0 4px; /* 稍微减小 分页按钮 左右margin */
+            padding: 6px 10px; /* 稍微减小 分页按钮 内边距 */
             border-radius: 6px;
             background-color: #f0f0f0;
             border: none;
             color: #555;
-            font-size: 0.9em;
+            font-size: 0.85em; /* 稍微缩小 分页按钮 字体 */
             transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
         }
          #replacement-editor .pagination-container button:hover {
@@ -273,16 +273,16 @@
        #replacement-editor .editor-buttons-container {
          display: flex;
          justify-content: center;
-         gap: 15px;
-         margin-top: 15px;
-         margin-bottom: 20px;
+         gap: 10px; /* 稍微减小 保存/关闭按钮 间距 */
+         margin-top: 10px; /* 稍微减小 上边距 */
+         margin-bottom: 15px; /* 稍微减小 下边距 */
        }
        #replacement-editor .editor-buttons-container button {
          display: inline-block;
          margin: 0;
-         padding: 12px 20px;
+         padding: 10px 16px; /* 稍微减小 保存/关闭按钮 内边距 */
          border-radius: 10px;
-         font-size: 1em;
+         font-size: 0.9em; /* 稍微缩小 保存/关闭按钮 字体 */
          background-color: #e6e6e6;
          color: #333;
          border: none;
@@ -408,45 +408,47 @@
             #replacement-editor {
                 width: 95%;
                 max-width: 400px;
-                padding: 20px;
+                padding: 15px; /* 稍微减小 编辑器 padding */
                 font-size: 0.9em;
             }
             #replacement-editor .replacement-row {
-                flex-direction: row; /* 恢复横向排列 */
+                flex-direction: row; /* 改回横向排列 */
                 align-items: center;   /* 垂直居中对齐 */
+                margin-bottom: 6px; /* 进一步减小行间距 */
             }
             #replacement-editor label {
-                text-align: right;      /* 恢复 label 右对齐 */
+                text-align: right;      /* label 恢复右对齐 */
                 margin-bottom: 0;    /* 移除 label 下边距 */
-                flex-basis: 80px;      /* 恢复 label 宽度 */
-                margin-right: 8px;
+                flex-basis: 50px;      /* 进一步缩小 label 宽度 */
+                font-size: 0.85em; /* 进一步缩小 label 字体 */
+                margin-right: 3px; /* 进一步减小 label 右边距 */
             }
             #replacement-editor input {
-                padding: 8px;        /* 恢复输入框内边距 */
-                font-size: 0.95em;       /* 恢复输入框字体 */
+                padding: 5px;        /* 进一步减小 input 内边距 */
+                font-size: 0.85em;       /* 进一步缩小 input 字体 */
                 margin-bottom: 0;
             }
             #replacement-editor button,
             #replacement-editor .button-pagination-container button,
             #replacement-editor .editor-buttons-container button,
             #replacement-editor .pagination-container button {
-                padding: 10px 14px;
-                font-size: 0.9em;
-                margin: 4px;
+                padding: 6px 10px;    /* 进一步减小 编辑器按钮内边距 */
+                font-size: 0.85em;      /* 进一步缩小 编辑器按钮字体 */
+                margin: 3px;
             }
             #replacement-editor .delete-button {
-                padding: 3px 6px;
-                font-size: 0.75em;
-                margin-left: 5px;
+                padding: 2px 5px;    /* 进一步减小 删除按钮内边距 */
+                font-size: 0.7em;
+                margin-left: 3px;
             }
             #replacement-editor .scrollable-container {
-                max-height: 200px;
+                max-height: 250px;   /* 调整滚动区域高度，容纳约 5 条规则 */
             }
         }
 
 
     `);
-    // ... (JavaScript 代码部分保持不变，与 v2.7 版本一致)
+    // ... (JavaScript 代码部分保持不变，与 v2.6 版本一致)
         // 创建悬浮球容器元素 (新的容器元素)
     let floatingBallContainer = document.createElement('div');
     floatingBallContainer.id = 'floating-ball-container';
