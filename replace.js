@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         动态文本替换悬浮球
 // @namespace    http://yournamespace.com
-// @version      4.4j
-// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, 修复新增条目 BUG，界面更紧凑, 新增半透明模糊悬浮窗和按钮效果，更美观, 再次修复新增条目 BUG (v3.8 Bugfix), 美化删除按钮样式为半透明黑色按钮, 全局字体颜色更新为浅色白色系 (v3.9 Font Update), 新增右键选中文本快速替换功能 (v4.0 New Feature), 修复新增条目报错，增强动画效果，美化按钮样式 (v4.1 Animation & Button Update), 新增右键替换开关，可禁用默认右键菜单 (v4.2 Toggle Switch Feature), 全面增强弹出窗口和按钮动画效果 (v4.3 Animation Overhaul), 美化滑动条，调整输入框宽度，固定编辑器窗口大小 (v4.4 UI Refinements), 修复匹配不严格问题，实现全词严格匹配 (v4.4c Strict Matching Fix), 添加 null 检查，增强代码健壮性，尝试解决 `nodeType` is null 错误 (v4.4d Null Check), 在文本替换规则编辑界面右下角新增右键替换开关 (v4.4e Editor Switch), 全面适配手机端网页浏览，优化悬浮窗显示 (v4.4f Mobile Adaption), 手机端规则条目极致紧凑横向排版优化 (v4.4g Mobile Layout Refine), **手机端极致紧凑横向排版再优化，修复悬浮球不显示和 appendChild 错误 (v4.4j Mobile Layout & Bugfix)**.
+// @version      4.4k
+// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, 修复新增条目 BUG，界面更紧凑, 新增半透明模糊悬浮窗和按钮效果，更美观, 再次修复新增条目 BUG (v3.8 Bugfix), 美化删除按钮样式为半透明黑色按钮, 全局字体颜色更新为浅色白色系 (v3.9 Font Update), 新增右键选中文本快速替换功能 (v4.0 New Feature), 修复新增条目报错，增强动画效果，美化按钮样式 (v4.1 Animation & Button Update), 新增右键替换开关，可禁用默认右键菜单 (v4.2 Toggle Switch Feature), 全面增强弹出窗口和按钮动画效果 (v4.3 Animation Overhaul), 美化滑动条，调整输入框宽度，固定编辑器窗口大小 (v4.4 UI Refinements), 修复匹配不严格问题，实现全词严格匹配 (v4.4c Strict Matching Fix), 添加 null 检查，增强代码健壮性，尝试解决 `nodeType` is null 错误 (v4.4d Null Check), 在文本替换规则编辑界面右下角新增右键替换开关 (v4.4e Editor Switch), 全面适配手机端网页浏览，优化悬浮窗显示 (v4.4f Mobile Adaption), 手机端规则条目极致紧凑横向排版优化 (v4.4g Mobile Layout Refine), 手机端极致紧凑横向排版再优化，修复悬浮球不显示和 appendChild 错误 (v4.4j Mobile Layout & Bugfix), **手机端字体和排版优化，彻底修复分页 BUG (v4.4k Mobile Font & Pagination Fix)**.
 // @author       你的名字
 // @match        *://*/*
 // @grant        GM_addStyle
@@ -44,18 +44,18 @@
         :root {
             /* Dark Mode 默认主题色 - 全局浅色字体调整 */
             --bg-color: #121212;
-            --modal-bg-color: rgba(34, 34, 34, 0.7); /* 半透明模态框背景 */
-            --button-bg-color: rgba(51, 51, 51, 0.6); /* 半透明按钮背景 */
-            --text-color: #f0f0f0; /*  更亮的浅白色，全局文本颜色  */
-            --text-color-light: #ddd; /*  更浅的白色，辅助文本颜色  */
-            --text-color-lighter: #eee; /*  更淡的白色，更辅助文本颜色  */
+            --modal-bg-color: rgba(34, 34, 34, 0.7);
+            --button-bg-color: rgba(51, 51, 51, 0.6);
+            --text-color: #f0f0f0;
+            --text-color-light: #ddd;
+            --text-color-lighter: #eee;
             --border-color: #555;
             --hover-bg-color: #444;
             --button-hover-bg-color: var(--hover-bg-color);
             --button-active-bg-color: #555;
-            --button-text-color: var(--text-color); /* 按钮文字颜色，使用 --text-color */
-            --button-delete-bg-color: #f44336; /* 保持删除按钮 hover 时的红色 */
-            --button-delete-hover-bg-color: #d32f2f; /* 保持删除按钮 hover 时的红色 */
+            --button-text-color: var(--text-color);
+            --button-delete-bg-color: #f44336;
+            --button-delete-hover-bg-color: #d32f2f;
             --scroll-track-color: #333;
             --scroll-thumb-color: #666;
             --scroll-thumb-hover-color: #888;
@@ -63,20 +63,20 @@
             --floating-ball-text-color: #333;
             --toggle-indicator-on-color: #69F0AE;
             --toggle-indicator-off-color: #FF5252;
-            --quick-replace-toggle-on-color: #69F0AE; /* v4.2 右键替换开关 ON 颜色 */
-            --quick-replace-toggle-off-color: #FF5252; /* v4.2 右键替换开关 OFF 颜色 */
+            --quick-replace-toggle-on-color: #69F0AE;
+            --quick-replace-toggle-off-color: #FF5252;
 
-            /* v4.3 Animation Variables - 统一动画变量 */
+            /* v4.3 Animation Variables */
             --modal-transition-duration: 0.25s;
-            --modal-transition-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275); /*  更活泼的缓动函数 */
+            --modal-transition-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275);
             --button-transition-duration: 0.2s;
-            --button-transition-easing: cubic-bezier(0.175, 0.885, 0.32, 1.15); /* 按钮缓动函数略有不同 */
+            --button-transition-easing: cubic-bezier(0.175, 0.885, 0.32, 1.15);
 
             --base-font-size: 0.9em; /* v4.4i 电脑端基础字体大小 */
         }
 
         body {
-            font-size: var(--base-font-size); /* v4.4i 全局基础字体大小应用 */
+            font-size: var(--base-font-size);
         }
 
 
@@ -466,29 +466,29 @@
         /* 媒体查询，针对小屏幕设备（例如手机） - 保持极致紧凑样式 */
         @media (max-width: 768px) {
             :root {
-                --base-font-size: 0.8em; /* v4.4i 手机端基础字体大小 */
+                --base-font-size: 0.9em; /* v4.4k 手机端基础字体大小 增大 */
             }
             #replacement-editor { /* v4.4f 移动端编辑器窗口整体样式调整 */
                 width: 90%; /* v4.4f 百分比宽度 */
                 max-width: 360px; /* v4.4f 最大宽度限制 */
                 padding: 10px; /* v4.4h 极致紧凑 padding */
-                font-size: 0.8em; /* v4.4h 极致紧凑字体 */
+                font-size: 0.9em; /* v4.4h 极致紧凑字体 */
              }
              #replacement-editor h2 { /* v4.4f 移动端标题字体大小 */
-                 font-size: 1em; /* v4.4h 更小标题字体 */
+                 font-size: 1.1em; /* v4.4h 更小标题字体 */
                  margin-bottom: 8px; /* v4.4h 标题 margin-bottom 减小 */
              }
              #replacement-editor label { /* v4.4f 移动端 label 字体大小 */
-                 font-size: 0.75em; /* v4.4h 极致紧凑字体 */
+                 font-size: 0.85em; /* v4.4h 极致紧凑字体 */
                  margin-bottom: 0; /* v4.4h label margin-bottom 移除 */
                  margin-right: 2px; /* v4.4j  增加 label margin-right */
              }
              #replacement-editor input { /* v4.4f 移动端 input 字体和 padding */
-                 font-size: 0.75em; /* v4.4h 极致紧凑字体 */
+                 font-size: 0.85em; /* v4.4h 极致紧凑字体 */
                  padding: 3px; /* v4.4h 极致紧凑 padding */
                  border-radius: 4px; /* v4.4h 更小圆角 */
                  margin-bottom: 0; /* v4.4h input margin-bottom 移除 */
-                 width: 90px; /* v4.4j  进一步减小输入框宽度 */
+                 width: 100px; /* v4.4j  进一步减小输入框宽度 */
              }
              #replacement-editor button, /* v4.4f 移动端 按钮字体和 padding */
              #replacement-editor .button-pagination-container button,
@@ -510,7 +510,7 @@
                   margin: 0; /* v4.4h 移除 margin */
              }
              #quick-replace-modal { /* v4.4f 移动端 快速替换 modal 样式 */
-                 padding: 8px 12px; /* v4.4f 极致紧凑 padding */
+                 padding: 10px 15px; /* v4.4f 极致紧凑 padding */
              }
              #quick-replace-modal h2 { /* v4.4f 移动端 快速替换 modal 标题字体大小 */
                  margin-bottom: 8px; /* v4.4h margin-bottom 减小 */
@@ -539,8 +539,8 @@
              }
              #replacement-editor .delete-button-enhanced { /* v4.4g 移动端 delete-button 字体和尺寸进一步减小 */
                  font-size: 0.6em; /* v4.4h 极小字体 */
-                 width: 18px; /*  固定宽度  v4.4h 更小尺寸 */
-                 height: 18px; /*  固定高度  v4.4h 更小尺寸 */
+                 width: 20px; /*  固定宽度  v4.4j 调整删除按钮宽度为 20px */
+                 height: 20px; /*  固定高度  v4.4j 调整删除按钮高度为 20px */
                  border-radius: 4px; /* v4.4j 更小圆角 */
                  position: absolute; /* v4.4g 移除绝对定位 */
                  top: 50%; /* v4.4j 垂直居中 */
@@ -561,15 +561,15 @@
         /* v4.4e 编辑器窗口右下角右键开关样式 - 电脑端样式保持不变 */
         #editor-quick-replace-switch-container {
             position: absolute;
-            bottom: 15px; /* 距离底部 */
-            right: 20px; /* 距离右侧 */
+            bottom: 15px;
+            right: 20px;
             width: 36px;
             height: 20px;
             cursor: pointer;
             user-select: none;
             display: flex;
             align-items: center;
-            justify-content: flex-end; /* 按钮默认在右侧 */
+            justify-content: flex-end;
         }
 
         #editor-quick-replace-switch-button {
@@ -668,7 +668,7 @@
             </label>
         </div>
         <div id="quick-replace-toggle-container">  <!-- v4.2 悬浮球右键替换开关容器 -->
-            <div id="quick-replace-toggle-button" class="${isQuickReplaceEnabled ? 'on' : 'off'}"></div> <!-- v4.2 右键替换开关按钮，初始状态 -->
+            <div id="quick-replace-toggle-button" class="${isQuickReplaceEnabled ? 'on' : 'off'}"></div> <!-- v4.2 悬浮球右键替换开关按钮，初始状态 -->
         </div>
         <div id="editor-quick-replace-switch-container">  <!-- v4.4e 编辑器窗口右下角右键开关容器 -->
             <div id="editor-quick-replace-switch-button" class="${isQuickReplaceEnabled ? 'on' : 'off'}"></div> <!-- v4.4e 编辑器窗口右下角右键开关按钮，初始状态 -->
@@ -829,6 +829,7 @@
             const startIndex = (currentPage - 1) * rulesPerPage;
             const endIndex = Math.min(startIndex + rulesPerPage, totalRules);
             let ruleIndex = 0; // 规则索引，用于在所有规则中定位
+            let displayedRulesCount = 0; // v4.4k  当前页显示的规则计数
 
             for (const key in replacementTable) {
                 if (ruleIndex >= startIndex && ruleIndex < endIndex) {
@@ -840,7 +841,7 @@
                     replacementRow.appendChild(originalLabel);
                     const originalInput = document.createElement('input');
                     originalInput.value = key;
-                    originalInput.placeholder = '请输入要替换的原文'; // Placeholder 提示
+                    originalInput.placeholder = '请输入要替换的原文';
                     replacementRow.appendChild(originalInput);
                     // 替换文输入框
                     const translatedLabel = document.createElement('label');
@@ -848,34 +849,36 @@
                     replacementRow.appendChild(translatedLabel);
                     const translatedInput = document.createElement('input');
                     translatedInput.value = replacementTable[key];
-                    translatedInput.placeholder = '请输入替换后的文本'; // Placeholder 提示
+                    translatedInput.placeholder = '请输入替换后的文本';
                     replacementRow.appendChild(translatedInput);
-                    // 删除按钮
+                    // 删除按钮 (确保每个规则只创建一个删除按钮)
                     const deleteButton = document.createElement('button');
                     deleteButton.textContent = 'X';
-                    deleteButton.classList.add('delete-button-enhanced'); // 添加新的 class
+                    deleteButton.classList.add('delete-button-enhanced');
                     deleteButton.addEventListener('click', function () {
                         const originalKey = originalInput.value;
                         delete replacementTable[originalKey];
                         scrollableContent.removeChild(replacementRow);
                         updateReplacementTable();
                         replacePage();
-                        // 重新计算总页数并更新分页按钮状态
                         const updatedTotalRules = Object.keys(replacementTable).length;
                         totalPages = Math.ceil(updatedTotalRules / rulesPerPage) || 1;
                         updatePaginationButtons();
-                         // 如果删除后当前页没有规则且不是第一页，则显示上一页
-                        if (scrollableContent.children.length === 0 && currentPage > 1) {
+                         if (scrollableContent.children.length === 0 && currentPage > 1) {
                             displayPage(currentPage - 1);
                         }
                     });
-                    replacementRow.appendChild(deleteButton);
+                    replacementRow.appendChild(deleteButton); // 添加删除按钮
 
                     scrollableContent.appendChild(replacementRow);
+                    displayedRulesCount++; // v4.4k 计数器递增
                 }
                 ruleIndex++;
             }
-            updatePaginationButtons(); // 更新分页按钮状态
+            updatePaginationButtons();
+             if (displayedRulesCount === 0 && currentPage > 1) { // v4.4k  如果当前页无规则且不是第一页
+                 displayPage(currentPage - 1); // v4.4k  自动显示上一页
+             }
         }
 
 
