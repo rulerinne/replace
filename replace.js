@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         动态文本替换悬浮球
 // @namespace    http://yournamespace.com
-// @version      3.5
-// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, **默认深色模式，界面更简洁**。
+// @version      3.6
+// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁**, 优化移动端字体颜色，提升桌面端美观度**。
 // @author       你的名字
 // @match        *://*/*
 // @grant        GM_addStyle
@@ -31,30 +31,30 @@
     // 立即执行页面替换，防止原文闪烁 (在添加样式和创建元素之前执行)
     replacePage();
 
-    // 定义 CSS 变量和样式 (美化版本 3.5 - 默认深色模式，移除切换功能)
+    // 定义 CSS 变量和样式 (美化版本 3.6 - 优化移动端字体颜色，提升桌面端美观度)
     const styles = `
         :root {
-            /* Dark Mode 默认主题色 (移除 Light Mode 定义) */
-            --bg-color: #121212; /* 深灰色背景 */
-            --modal-bg-color: #222; /* 稍浅的深灰色模态框背景 */
-            --text-color: #eee;      /* 浅灰色文字 */
+            /* Dark Mode 默认主题色 */
+            --bg-color: #121212;
+            --modal-bg-color: #222;
+            --text-color: #eee;
             --text-color-light: #ccc;
             --text-color-lighter: #aaa;
-            --border-color: #555;     /* 深灰色边框 */
-            --hover-bg-color: #444;   /* 较深的 hover 背景 */
-            --button-bg-color: #333;  /* 深灰色按钮背景 */
+            --border-color: #555;
+            --hover-bg-color: #444;
+            --button-bg-color: #333;
             --button-hover-bg-color: var(--hover-bg-color);
             --button-active-bg-color: #555;
             --button-text-color: var(--text-color);
-            --button-delete-bg-color: #d32f2f; /* 保持删除按钮红色系 */
+            --button-delete-bg-color: #d32f2f;
             --button-delete-hover-bg-color: #f44336;
             --scroll-track-color: #333;
             --scroll-thumb-color: #666;
             --scroll-thumb-hover-color: #888;
-            --floating-ball-bg-color: rgba(255, 255, 255, 0.3); /* 浅色悬浮球背景 */
-            --floating-ball-text-color: #333;          /* 深色悬浮球文字 */
-            --toggle-indicator-on-color: #69F0AE; /* 鲜艳的绿色指示器 */
-            --toggle-indicator-off-color: #FF5252;/* 鲜艳的红色指示器 */
+            --floating-ball-bg-color: rgba(255, 255, 255, 0.3);
+            --floating-ball-text-color: #333;
+            --toggle-indicator-on-color: #69F0AE;
+            --toggle-indicator-off-color: #FF5252;
         }
 
 
@@ -79,13 +79,13 @@
             justify-content: center;
             border-radius: 50%;
             font-size: 24px;
-            transition: opacity 0.3s ease-in-out, transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), background-color 0.2s ease-in-out; /* 背景色过渡 */
+            transition: opacity 0.3s ease-in-out, transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), background-color 0.2s ease-in-out;
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
             position: relative;
             pointer-events: auto;
         }
         #floating-ball:hover {
-            background-color: rgba(255, 255, 255, 0.5); /* Hover 时背景色 */
+            background-color: rgba(255, 255, 255, 0.5);
         }
 
 
@@ -132,7 +132,7 @@
             transform-origin: top center;
             opacity: 0;
             transform: scaleY(0.8);
-            transition: transform 0.3s ease-out, opacity 0.3s ease-out, background-color 0.3s ease-in-out, border-color 0.3s ease-in-out, color 0.3s ease-in-out; /*  过渡效果 */
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out, background-color 0.3s ease-in-out, border-color 0.3s ease-in-out, color 0.3s ease-in-out;
             user-select: none;
              pointer-events: auto;
         }
@@ -157,7 +157,7 @@
              background-color: var(--button-bg-color);
              color: var(--button-text-color);
              font-size: 1em;
-             transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out; /*  过渡效果 */
+             transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out;
           }
            #choice-modal button:hover {
              background-color: var(--button-hover-bg-color);
@@ -184,7 +184,7 @@
             flex-direction: column;
             user-select: none;
             pointer-events: auto;
-            transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out, color 0.3s ease-in-out; /*  过渡效果 */
+            transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out, color 0.3s ease-in-out;
          }
          #replacement-editor.hide {
             opacity: 0;
@@ -199,94 +199,96 @@
          }
         #replacement-editor .replacement-row {
            display: flex;
-           margin-bottom: 8px; /* 稍微减小行间距 */
-            align-items: center;
+           margin-bottom: 10px; /* 稍微增加行间距 */
+            align-items: baseline; /* 修改为 baseline 对齐 */
         }
         #replacement-editor label {
-             margin-right: 4px; /* 稍微减小 label 右边距 */
-             flex-basis: 60px; /* 缩小 label 宽度 */
+             margin-right: 6px; /* 稍微增加 label 右边距 */
+             flex-basis: 60px;
              text-align: right;
              white-space: nowrap;
              color: var(--text-color-light);
-             font-size: 0.9em; /* 稍微缩小 label 字体 */
-             line-height: normal; /* 恢复 label 行高默认值 */
+             font-size: 0.95em; /* 稍微增大 label 字体 */
+             line-height: 1.5; /* 调整 label 行高 */
         }
         #replacement-editor input {
            flex-grow: 1;
-           padding: 6px; /* 稍微减小 input 内边距 */
+           padding: 8px; /* 稍微增加 input 内边距 */
            border: 1px solid var(--border-color);
-           border-radius: 6px; /* 稍微减小 input 圆角 */
-           font-size: 0.9em; /* 稍微缩小 input 字体 */
+           border-radius: 8px; /* 稍微增加 input 圆角 */
+           font-size: 0.95em; /* 稍微增大 input 字体 */
            color: var(--text-color);
-           background-color: #444; /*  默认深色背景 for input */
-           transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out, background-color 0.2s ease-in-out; /*  过渡效果 */
+           background-color: #444;
+           transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out, background-color 0.2s ease-in-out;
            user-select: text !important;
-           min-width: auto; /* 恢复 input 最小宽度默认值 */
+           min-width: auto;
         }
 
 
          #replacement-editor input:focus {
              border-color: #ccc;
-             box-shadow: 0 0 5px rgba(0, 0, 0, 0.08); /* 恢复 focus 效果 */
+             box-shadow: 0 0 5px rgba(0, 0, 0, 0.08);
              outline: none;
          }
           #replacement-editor button,
-          #replacement-editor .button-pagination-container button{
-            padding: 8px 12px;
+          #replacement-editor .button-pagination-container button,
+          #choice-modal button{ /*  选择菜单按钮也应用此样式  */
+            padding: 10px 16px; /* 稍微增加按钮 padding */
              cursor: pointer;
              border: none;
-             border-radius: 8px; /* 恢复 button 圆角 */
+             border-radius: 10px; /* 稍微增加按钮圆角 */
              background-color: var(--button-bg-color);
               color: var(--button-text-color);
-              font-size: 0.9em; /* 恢复 button 字体 */
-              transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out; /*  过渡效果 */
+              font-size: 0.95em; /* 稍微增大按钮字体 */
+              transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out;
           }
           #replacement-editor button:hover,
-          #replacement-editor .button-pagination-container button:hover {
+          #replacement-editor .button-pagination-container button:hover,
+          #choice-modal button:hover { /* 选择菜单按钮 hover 效果 */
               background-color: var(--button-hover-bg-color);
               transform: scale(1.03);
-              box-shadow: 0 2px 4px rgba(0,0,0,0.08); /* 恢复 hover 阴影 */
+              box-shadow: 0 2px 4px rgba(0,0,0,0.08);
            }
             #replacement-editor .button-pagination-container {
                display: flex;
                justify-content: space-around;
                align-items: center;
-               margin-top: 10px; /* 稍微减小 上边距 */
-               margin-bottom: 10px; /* 稍微减小 下边距 */
+               margin-top: 15px; /* 稍微增加 上边距 */
+               margin-bottom: 15px; /* 稍微增加 下边距 */
             }
 
            #replacement-editor .delete-button {
               background-color: var(--button-delete-bg-color);
               color: white;
              border-radius: 50%;
-             padding: 3px 6px;
+             padding: 4px 7px; /* 稍微增加删除按钮 padding */
              border: none;
-              margin-left: 4px;
+              margin-left: 6px; /* 稍微增加删除按钮左边距 */
             cursor: pointer;
-            font-size: 0.75em;
+            font-size: 0.8em; /* 稍微增大删除按钮字体 */
             line-height: 1;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2); /* 恢复删除按钮阴影 */
-            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out; /*  过渡效果 */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out;
             }
             #replacement-editor .delete-button:hover{
                  background-color: var(--button-delete-hover-bg-color);
                  transform: scale(1.1);
-                 box-shadow: 0 3px 5px rgba(0,0,0,0.3); /* 恢复删除按钮 hover 阴影 */
+                 box-shadow: 0 3px 5px rgba(0,0,0,0.3);
             }
             #replacement-editor .scrollable-container {
                overflow-x: hidden;
               overflow-y: auto;
-                max-height: 300px;
-                padding-right: 8px;
+                max-height: 350px; /* 稍微增加滚动区域高度 */
+                padding-right: 10px; /* 稍微增加滚动区域右内边距 */
                 border-radius: 12px;
-                transition: background-color 0.3s ease-in-out; /*  过渡效果 */
-                 background-color: transparent; /*  透明背景 */
+                transition: background-color 0.3s ease-in-out;
+                 background-color: transparent;
             }
             #replacement-editor .scrollable-content {
                display: flex;
                 flex-direction: column;
-                padding-right: 8px;
-                padding-bottom: 5px;
+                padding-right: 10px; /* 稍微增加内容右内边距 */
+                padding-bottom: 8px; /* 稍微增加内容下内边距 */
             }
 
 
@@ -295,14 +297,14 @@
 
 
         #replacement-editor .pagination-container button {
-            margin: 0 4px;
-            padding: 6px 10px;
-            border-radius: 6px;
+            margin: 0 6px; /* 稍微增加分页按钮水平间距 */
+            padding: 8px 12px; /* 稍微增加分页按钮 padding */
+            border-radius: 8px; /* 稍微增加分页按钮圆角 */
             background-color: var(--button-bg-color);
             border: none;
             color: var(--text-color-light);
-            font-size: 0.85em;
-            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, transform 0.2s ease-in-out, color 0.2s ease-in-out; /*  过渡效果 */
+            font-size: 0.9em; /* 稍微增大分页按钮字体 */
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, transform 0.2s ease-in-out, color 0.2s ease-in-out;
         }
          #replacement-editor .pagination-container button:hover {
              background-color: var(--button-hover-bg-color);
@@ -318,20 +320,20 @@
        #replacement-editor .editor-buttons-container {
          display: flex;
          justify-content: center;
-         gap: 10px;
-         margin-top: 10px;
-         margin-bottom: 15px;
+         gap: 15px; /* 稍微增加主按钮组按钮间距 */
+         margin-top: 20px; /* 稍微增加主按钮组上边距 */
+         margin-bottom: 20px; /* 稍微增加主按钮组下边距 */
        }
        #replacement-editor .editor-buttons-container button {
          display: inline-block;
          margin: 0;
-         padding: 10px 16px;
-         border-radius: 10px;
-         font-size: 0.9em;
+         padding: 12px 20px; /* 稍微增加主按钮 padding */
+         border-radius: 12px; /* 稍微增加主按钮圆角 */
+         font-size: 1em; /* 稍微增大主按钮字体 */
          background-color: var(--button-bg-color);
          color: var(--button-text-color);
          border: none;
-         transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out; /*  过渡效果 */
+         transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out;
      }
       #replacement-editor .editor-buttons-container button:hover {
           background-color: var(--button-hover-bg-color);
@@ -345,7 +347,7 @@
          align-items: center;
          padding: 10px 20px;
          border-top: 1px solid var(--border-color);
-         transition: border-color 0.3s ease-in-out; /*  过渡效果 */
+         transition: border-color 0.3s ease-in-out;
       }
 
       #replacement-editor .enable-switch-label {
@@ -374,8 +376,8 @@
           left: 0;
           right: 0;
           bottom: 0;
-          background-color: #888; /* 默认深色滑块颜色 */
-          transition: .4s, background-color 0.3s ease-in-out; /*  过渡效果 */
+          background-color: #888;
+          transition: .4s, background-color 0.3s ease-in-out;
           border-radius: 22px;
       }
 
@@ -406,7 +408,7 @@
 
        /* 滚动条美化 (Webkit based browsers) - 电脑端 恢复稍宽滚动条 */
         #replacement-editor .scrollable-container::-webkit-scrollbar {
-            width: 8px;
+            width: 10px; /* 稍微增加滚动条宽度 */
         }
 
         #replacement-editor .scrollable-container::-webkit-scrollbar-track {
@@ -425,6 +427,16 @@
 
         /* 媒体查询，针对小屏幕设备（例如手机） - 保持极致紧凑样式 */
         @media (max-width: 768px) {
+            /* 移动端输入框和按钮字体颜色修复 */
+            #replacement-editor input,
+            #replacement-editor button,
+            #replacement-editor .button-pagination-container button,
+            #replacement-editor .editor-buttons-container button,
+            #replacement-editor .pagination-container button,
+            #choice-modal button {
+                color: var(--text-color); /* 强制设置移动端字体颜色为浅色 */
+            }
+
             #floating-ball-container {
                 width: 36px;
                 height: 36px;
@@ -463,36 +475,37 @@
                 font-size: 0.85em;
             }
             #replacement-editor .replacement-row {
-                margin-bottom: 2px;
+                margin-bottom: 4px; /* 稍微减小移动端行间距 */
+                align-items: baseline; /* 移动端也保持 baseline 对齐 */
             }
             #replacement-editor label {
                 flex-basis: 30px;
                 font-size: 0.75em;
-                margin-right: 1px;
-                line-height: 1;
+                margin-right: 2px; /* 稍微减小移动端 label 右边距 */
+                line-height: 1.3; /* 调整移动端 label 行高 */
             }
             #replacement-editor input {
-                padding: 2px 3px;
+                padding: 4px 5px; /* 稍微减小移动端 input 内边距 */
                 font-size: 0.75em;
-                border-radius: 3px;
+                border-radius: 4px; /* 稍微减小移动端 input 圆角 */
                 min-width: 0;
             }
             #replacement-editor button,
             #replacement-editor .button-pagination-container button,
             #replacement-editor .editor-buttons-container button,
             #replacement-editor .pagination-container button {
-                padding: 4px 6px;
+                padding: 5px 8px; /* 稍微减小移动端按钮 padding */
                 font-size: 0.75em;
-                margin: 1px;
-                border-radius: 5px;
+                margin: 2px; /* 稍微减小移动端按钮 margin */
+                border-radius: 5px; /* 稍微减小移动端按钮圆角 */
             }
             #replacement-editor .delete-button {
-                padding: 1px 2px;
-                font-size: 0.55em;
-                margin-left: 1px;
+                padding: 2px 4px; /* 稍微减小移动端删除按钮 padding */
+                font-size: 0.6em;
+                margin-left: 2px; /* 稍微减小移动端删除按钮左边距 */
             }
             #replacement-editor .scrollable-container {
-                padding-right: 4px;
+                padding-right: 5px; /* 稍微减小移动端滚动区域右内边距 */
                 border-radius: 8px;
             }
              /* 滚动条美化 (Webkit based browsers) - 手机端 恢复极窄滚动条 */
@@ -520,7 +533,7 @@
     GM_addStyle(styles);
 
 
-    // ... (JavaScript 代码部分，v3.5 版本移除暗色模式切换相关代码)
+    // ... (JavaScript 代码部分，与 v3.5 版本一致)
         // 创建悬浮球容器元素 (新的容器元素)
     let floatingBallContainer = document.createElement('div');
     floatingBallContainer.id = 'floating-ball-container';
