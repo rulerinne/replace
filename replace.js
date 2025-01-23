@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         动态文本替换悬浮球
 // @namespace    http://yournamespace.com
-// @version      3.3
-// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, **优化悬浮球点击行为，再次点击可收回菜单**。
+// @version      3.5
+// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, **默认深色模式，界面更简洁**。
 // @author       你的名字
 // @match        *://*/*
 // @grant        GM_addStyle
@@ -20,7 +20,7 @@
     const storageKey = `replacementTable_${hostname}`;
     const enabledKey = `replacementEnabled_${hostname}`; // 开关状态存储 key
 
-    // 定义文本替换表,初始值从GM_getValue读取，如果没有则用默认值，每个网站独立存储
+    // 从 GM_getValue 读取配置，如果没有则使用默认值
     let replacementTable = GM_getValue(storageKey, {});
     let isReplacementEnabled = GM_getValue(enabledKey, true); // 默认开启替换功能
 
@@ -31,9 +31,33 @@
     // 立即执行页面替换，防止原文闪烁 (在添加样式和创建元素之前执行)
     replacePage();
 
+    // 定义 CSS 变量和样式 (美化版本 3.5 - 默认深色模式，移除切换功能)
+    const styles = `
+        :root {
+            /* Dark Mode 默认主题色 (移除 Light Mode 定义) */
+            --bg-color: #121212; /* 深灰色背景 */
+            --modal-bg-color: #222; /* 稍浅的深灰色模态框背景 */
+            --text-color: #eee;      /* 浅灰色文字 */
+            --text-color-light: #ccc;
+            --text-color-lighter: #aaa;
+            --border-color: #555;     /* 深灰色边框 */
+            --hover-bg-color: #444;   /* 较深的 hover 背景 */
+            --button-bg-color: #333;  /* 深灰色按钮背景 */
+            --button-hover-bg-color: var(--hover-bg-color);
+            --button-active-bg-color: #555;
+            --button-text-color: var(--text-color);
+            --button-delete-bg-color: #d32f2f; /* 保持删除按钮红色系 */
+            --button-delete-hover-bg-color: #f44336;
+            --scroll-track-color: #333;
+            --scroll-thumb-color: #666;
+            --scroll-thumb-hover-color: #888;
+            --floating-ball-bg-color: rgba(255, 255, 255, 0.3); /* 浅色悬浮球背景 */
+            --floating-ball-text-color: #333;          /* 深色悬浮球文字 */
+            --toggle-indicator-on-color: #69F0AE; /* 鲜艳的绿色指示器 */
+            --toggle-indicator-off-color: #FF5252;/* 鲜艳的红色指示器 */
+        }
 
-     // 添加 CSS 样式 (美化版本 3.3 - 优化悬浮球点击行为)
-    GM_addStyle(`
+
         #floating-ball-container {
             position: fixed;
             top: 20px;
@@ -48,18 +72,23 @@
         #floating-ball {
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.4);
-            color: white;
+            background-color: var(--floating-ball-bg-color);
+            color: var(--floating-ball-text-color);
             display: flex;
             align-items: center;
             justify-content: center;
             border-radius: 50%;
             font-size: 24px;
-            transition: opacity 0.3s ease-in-out, transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            transition: opacity 0.3s ease-in-out, transform 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55), background-color 0.2s ease-in-out; /* 背景色过渡 */
             box-shadow: 0 2px 6px rgba(0,0,0,0.3);
             position: relative;
             pointer-events: auto;
         }
+        #floating-ball:hover {
+            background-color: rgba(255, 255, 255, 0.5); /* Hover 时背景色 */
+        }
+
+
         #floating-ball.transparent {
             opacity: 0.4;
             transform: scale(0.9);
@@ -81,11 +110,11 @@
             cursor: pointer;
         }
         #toggle-indicator.on {
-            background-color: #4CAF50;
+            background-color: var(--toggle-indicator-on-color);
             border: none;
         }
         #toggle-indicator.off {
-            background-color: #f44336;
+            background-color: var(--toggle-indicator-off-color);
             border: none;
         }
 
@@ -93,8 +122,9 @@
         #choice-modal {
             position: fixed;
             z-index: 10000;
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
+            background-color: var(--modal-bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
             padding: 15px 20px;
             border-radius: 12px;
@@ -102,7 +132,7 @@
             transform-origin: top center;
             opacity: 0;
             transform: scaleY(0.8);
-            transition: transform 0.3s ease-out, opacity 0.3s ease-out;
+            transition: transform 0.3s ease-out, opacity 0.3s ease-out, background-color 0.3s ease-in-out, border-color 0.3s ease-in-out, color 0.3s ease-in-out; /*  过渡效果 */
             user-select: none;
              pointer-events: auto;
         }
@@ -124,13 +154,13 @@
              cursor: pointer;
              border: none;
              border-radius: 8px;
-             background-color: #f0f0f0;
-             color: #333;
+             background-color: var(--button-bg-color);
+             color: var(--button-text-color);
              font-size: 1em;
-             transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+             transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out; /*  过渡效果 */
           }
            #choice-modal button:hover {
-             background-color: #e0e0e0;
+             background-color: var(--button-hover-bg-color);
              transform: scale(1.05);
              box-shadow: 0 2px 5px rgba(0,0,0,0.1);
           }
@@ -139,8 +169,9 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background-color: #f9f9f9;
-            border: 1px solid #ddd;
+            background-color: var(--modal-bg-color);
+            color: var(--text-color);
+            border: 1px solid var(--border-color);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             padding: 25px;
             z-index: 10001;
@@ -153,11 +184,18 @@
             flex-direction: column;
             user-select: none;
             pointer-events: auto;
+            transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out, color 0.3s ease-in-out; /*  过渡效果 */
          }
          #replacement-editor.hide {
             opacity: 0;
             transform: translate(-50%, -50%) scale(0.95);
             transition: opacity 0.3s ease-in, transform 0.3s ease-in;
+         }
+         #replacement-editor h2 {
+            text-align: center;
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: var(--text-color-light);
          }
         #replacement-editor .replacement-row {
            display: flex;
@@ -169,39 +207,43 @@
              flex-basis: 60px; /* 缩小 label 宽度 */
              text-align: right;
              white-space: nowrap;
-             color: #555;
+             color: var(--text-color-light);
              font-size: 0.9em; /* 稍微缩小 label 字体 */
              line-height: normal; /* 恢复 label 行高默认值 */
         }
         #replacement-editor input {
            flex-grow: 1;
            padding: 6px; /* 稍微减小 input 内边距 */
-           border: 1px solid #eee;
+           border: 1px solid var(--border-color);
            border-radius: 6px; /* 稍微减小 input 圆角 */
            font-size: 0.9em; /* 稍微缩小 input 字体 */
-           color: #444;
-           background-color: #fff;
-           transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+           color: var(--text-color);
+           background-color: #444; /*  默认深色背景 for input */
+           transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out, background-color 0.2s ease-in-out; /*  过渡效果 */
            user-select: text !important;
            min-width: auto; /* 恢复 input 最小宽度默认值 */
         }
+
+
          #replacement-editor input:focus {
              border-color: #ccc;
              box-shadow: 0 0 5px rgba(0, 0, 0, 0.08); /* 恢复 focus 效果 */
              outline: none;
          }
-          #replacement-editor button {
+          #replacement-editor button,
+          #replacement-editor .button-pagination-container button{
             padding: 8px 12px;
              cursor: pointer;
              border: none;
              border-radius: 8px; /* 恢复 button 圆角 */
-             background-color: #f0f0f0;
-              color: #333;
+             background-color: var(--button-bg-color);
+              color: var(--button-text-color);
               font-size: 0.9em; /* 恢复 button 字体 */
-              transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+              transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out; /*  过渡效果 */
           }
-          #replacement-editor button:hover {
-              background-color: #e0e0e0;
+          #replacement-editor button:hover,
+          #replacement-editor .button-pagination-container button:hover {
+              background-color: var(--button-hover-bg-color);
               transform: scale(1.03);
               box-shadow: 0 2px 4px rgba(0,0,0,0.08); /* 恢复 hover 阴影 */
            }
@@ -212,15 +254,9 @@
                margin-top: 10px; /* 稍微减小 上边距 */
                margin-bottom: 10px; /* 稍微减小 下边距 */
             }
-            #replacement-editor .button-pagination-container button{
-              background-color: #e0e0e0;
-                padding: 8px 12px;
-             }
-            #replacement-editor .button-pagination-container button:hover{
-               background-color: #d0d0d0;
-            }
+
            #replacement-editor .delete-button {
-              background-color: #f44336;
+              background-color: var(--button-delete-bg-color);
               color: white;
              border-radius: 50%;
              padding: 3px 6px;
@@ -230,10 +266,10 @@
             font-size: 0.75em;
             line-height: 1;
             box-shadow: 0 1px 3px rgba(0,0,0,0.2); /* 恢复删除按钮阴影 */
-            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out; /*  过渡效果 */
             }
             #replacement-editor .delete-button:hover{
-                 background-color: #d32f2f;
+                 background-color: var(--button-delete-hover-bg-color);
                  transform: scale(1.1);
                  box-shadow: 0 3px 5px rgba(0,0,0,0.3); /* 恢复删除按钮 hover 阴影 */
             }
@@ -243,6 +279,8 @@
                 max-height: 300px;
                 padding-right: 8px;
                 border-radius: 12px;
+                transition: background-color 0.3s ease-in-out; /*  过渡效果 */
+                 background-color: transparent; /*  透明背景 */
             }
             #replacement-editor .scrollable-content {
                display: flex;
@@ -260,21 +298,21 @@
             margin: 0 4px;
             padding: 6px 10px;
             border-radius: 6px;
-            background-color: #f0f0f0;
+            background-color: var(--button-bg-color);
             border: none;
-            color: #555;
+            color: var(--text-color-light);
             font-size: 0.85em;
-            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, transform 0.2s ease-in-out, color 0.2s ease-in-out; /*  过渡效果 */
         }
          #replacement-editor .pagination-container button:hover {
-             background-color: #e0e0e0;
-             color: #333;
+             background-color: var(--button-hover-bg-color);
+             color: var(--button-text-color);
          }
         #replacement-editor .pagination-container button:disabled {
             opacity: 0.6;
             cursor: default;
-            background-color: #f0f0f0;
-            color: #999;
+            background-color: var(--button-bg-color);
+            color: var(--text-color-lighter);
          }
 
        #replacement-editor .editor-buttons-container {
@@ -290,28 +328,29 @@
          padding: 10px 16px;
          border-radius: 10px;
          font-size: 0.9em;
-         background-color: #e6e6e6;
-         color: #333;
+         background-color: var(--button-bg-color);
+         color: var(--button-text-color);
          border: none;
-         transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+         transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out; /*  过渡效果 */
      }
       #replacement-editor .editor-buttons-container button:hover {
-          background-color: #d0d0d0;
+          background-color: var(--button-hover-bg-color);
           transform: scale(1.02);
           box-shadow: 0 2px 4px rgba(0,0,0,0.08);
       }
 
       #replacement-editor .enable-switch-container {
-         display: none;
+         display: none; /* 保持隐藏 */
          justify-content: flex-end;
          align-items: center;
          padding: 10px 20px;
-         border-top: 1px solid #eee;
+         border-top: 1px solid var(--border-color);
+         transition: border-color 0.3s ease-in-out; /*  过渡效果 */
       }
 
       #replacement-editor .enable-switch-label {
          margin-right: 10px;
-         color: #777;
+         color: var(--text-color-light);
          font-size: 0.9em;
       }
 
@@ -335,10 +374,11 @@
           left: 0;
           right: 0;
           bottom: 0;
-          background-color: #ccc;
-          transition: .4s;
+          background-color: #888; /* 默认深色滑块颜色 */
+          transition: .4s, background-color 0.3s ease-in-out; /*  过渡效果 */
           border-radius: 22px;
       }
+
 
       #replacement-editor .enable-slider:before {
           position: absolute;
@@ -364,24 +404,23 @@
           transform: translateX(18px);
       }
 
-
        /* 滚动条美化 (Webkit based browsers) - 电脑端 恢复稍宽滚动条 */
         #replacement-editor .scrollable-container::-webkit-scrollbar {
             width: 8px;
         }
 
         #replacement-editor .scrollable-container::-webkit-scrollbar-track {
-            background-color: #f1f1f1;
+            background-color: var(--scroll-track-color);
             border-radius: 10px;
         }
 
         #replacement-editor .scrollable-container::-webkit-scrollbar-thumb {
-            background-color: #ccc;
+            background-color: var(--scroll-thumb-color);
             border-radius: 10px;
         }
 
         #replacement-editor .scrollable-container::-webkit-scrollbar-thumb:hover {
-            background-color: #aaa;
+            background-color: var(--scroll-thumb-hover-color);
         }
 
         /* 媒体查询，针对小屏幕设备（例如手机） - 保持极致紧凑样式 */
@@ -462,23 +501,26 @@
             }
 
             #replacement-editor .scrollable-container::-webkit-scrollbar-track {
-                background-color: #f1f1f1;
+                background-color: var(--scroll-track-color);
                 border-radius: 6px;
             }
 
             #replacement-editor .scrollable-container::-webkit-scrollbar-thumb {
-                background-color: #ccc;
+                background-color: var(--scroll-thumb-color);
                 border-radius: 6px;
             }
 
             #replacement-editor .scrollable-container::-webkit-scrollbar-thumb:hover {
-                background-color: #aaa;
+                background-color: var(--scroll-thumb-hover-color);
             }
         }
 
 
-    `);
-    // ... (JavaScript 代码部分保持不变，与 v3.2 版本一致)
+    `;
+    GM_addStyle(styles);
+
+
+    // ... (JavaScript 代码部分，v3.5 版本移除暗色模式切换相关代码)
         // 创建悬浮球容器元素 (新的容器元素)
     let floatingBallContainer = document.createElement('div');
     floatingBallContainer.id = 'floating-ball-container';
@@ -500,6 +542,7 @@
 
     floatingBallContainer.appendChild(floatingBall); // 悬浮球放入容器
     document.body.appendChild(floatingBallContainer); // 容器添加到 body
+    document.body.classList.add('dark-mode'); // **默认添加 dark-mode class 到 body，启用深色模式**
 
 
     // 创建选择窗口元素 (保持不变)
@@ -512,11 +555,35 @@
     `;
     document.body.appendChild(choiceModal);
 
-    //创建文本替换编辑窗口 (保持不变)
+    //创建文本替换编辑窗口 (移除暗色模式切换按钮)
     let replacementEditor = document.createElement('div');
     replacementEditor.id = 'replacement-editor';
     replacementEditor.style.display = 'none'; // 初始化隐藏
+    replacementEditor.innerHTML = `
+        <h2>文本替换规则编辑</h2>
+        <div class="scrollable-container">
+            <div class="scrollable-content">
+            </div>
+        </div>
+        <div class="button-pagination-container">
+            <button id="prev-page" class="pagination-container button">上一页</button>
+            <button id="add-rule">新增条目</button>
+            <button id="next-page" class="pagination-container button">下一页</button>
+        </div>
+        <div class="editor-buttons-container">
+            <button id="save-button">保存</button>
+            <button id="close-button">关闭</button>
+        </div>
+         <div class="enable-switch-container" style="display:none;">  <!-- 隐藏 enable switch 容器 -->
+            <span class="enable-switch-label">启用：</span>
+            <label class="enable-switch">
+                <input type="checkbox" id="global-enable-switch">
+                <span class="enable-slider"></span>
+            </label>
+        </div>
+    `;
     document.body.appendChild(replacementEditor);
+
 
 
     let timeoutId;
@@ -626,20 +693,13 @@
         e.preventDefault();
     });
 
-   // 显示文本替换编辑器 (保持不变)
+   // 显示文本替换编辑器 (保持不变，移除暗色模式切换按钮相关代码)
     function showReplacementEditor() {
-        replacementEditor.innerHTML = ''; // 清空之前的编辑器内容
         replacementEditor.classList.remove('hide'); // 确保显示时没有隐藏动画 class
+        replacementEditor.style.display = 'block'; // 显示编辑器
 
-        // 创建滑动容器 (保持不变)
-        const scrollableContainer = document.createElement('div');
-        scrollableContainer.className = 'scrollable-container';
-        replacementEditor.appendChild(scrollableContainer); // 先将滑动容器添加到编辑器
-
-        const scrollableContent = document.createElement('div');
-        scrollableContent.className = 'scrollable-content';
-        scrollableContainer.appendChild(scrollableContent); // 然后将内容容器添加到滑动容器
-
+        const scrollableContent = replacementEditor.querySelector('.scrollable-content');
+        scrollableContent.innerHTML = ''; // 清空之前的编辑器内容
 
         // 加载当前网站的替换表 (保持不变)
         replacementTable = GM_getValue(storageKey, {});
@@ -666,6 +726,7 @@
                     replacementRow.appendChild(originalLabel);
                     const originalInput = document.createElement('input');
                     originalInput.value = key;
+                    originalInput.placeholder = '请输入要替换的原文'; // Placeholder 提示
                     replacementRow.appendChild(originalInput);
                     // 替换文输入框
                     const translatedLabel = document.createElement('label');
@@ -673,6 +734,7 @@
                     replacementRow.appendChild(translatedLabel);
                     const translatedInput = document.createElement('input');
                     translatedInput.value = replacementTable[key];
+                    translatedInput.placeholder = '请输入替换后的文本'; // Placeholder 提示
                     replacementRow.appendChild(translatedInput);
                     // 删除按钮
                     const deleteButton = document.createElement('button');
@@ -703,28 +765,17 @@
         }
 
 
-        // 创建 按钮和分页 容器 (保持不变)
-        const buttonPaginationContainer = document.createElement('div');
-        buttonPaginationContainer.className = 'button-pagination-container';
-        replacementEditor.appendChild(buttonPaginationContainer);
-
         // 上一页按钮 (保持不变)
-        const prevPageButton = document.createElement('button');
-        prevPageButton.innerText = '上一页';
-        prevPageButton.className = 'pagination-container button'; // 添加 pagination-container 类，保持样式一致
+        const prevPageButton = replacementEditor.querySelector('#prev-page');
         prevPageButton.addEventListener('click', function () {
             if (currentPage > 1) {
                 displayPage(currentPage - 1);
             }
         });
-        buttonPaginationContainer.appendChild(prevPageButton);
 
 
         // 添加新增条目按钮 (保持不变)
-        let addButton = document.createElement('button');
-        addButton.innerText = '新增条目';
-        buttonPaginationContainer.appendChild(addButton);
-
+        const addButton = replacementEditor.querySelector('#add-rule');
         addButton.addEventListener('click', function () {
             const replacementRow = document.createElement('div');
             replacementRow.className = 'replacement-row';
@@ -733,12 +784,14 @@
             originalLabel.textContent = '原文：';
             replacementRow.appendChild(originalLabel);
             const originalInput = document.createElement('input');
+            originalInput.placeholder = '请输入要替换的原文'; // Placeholder 提示
             replacementRow.appendChild(originalInput);
             // 替换文输入框
             const translatedLabel = document.createElement('label');
             translatedLabel.textContent = '替换：';
             replacementRow.appendChild(translatedLabel);
             const translatedInput = document.createElement('input');
+            translatedInput.placeholder = '请输入替换后的文本'; // Placeholder 提示
             replacementRow.appendChild(translatedInput);
             // 删除按钮
             const deleteButton = document.createElement('button');
@@ -761,15 +814,12 @@
 
 
         // 下一页按钮 (保持不变)
-        const nextPageButton = document.createElement('button');
-        nextPageButton.innerText = '下一页';
-        nextPageButton.className = 'pagination-container button'; // 添加 pagination-container 类，保持样式一致
+        const nextPageButton = replacementEditor.querySelector('#next-page');
         nextPageButton.addEventListener('click', function () {
             if (currentPage < totalPages) {
                 displayPage(currentPage + 1);
             }
         });
-        buttonPaginationContainer.appendChild(nextPageButton);
 
 
         // 更新分页按钮状态和页码显示 (保持不变)
@@ -779,23 +829,8 @@
         }
 
 
-        // 创建保存/关闭按钮容器 (保持不变)
-        const editorButtonsContainer = document.createElement('div');
-        editorButtonsContainer.className = 'editor-buttons-container';
-        replacementEditor.appendChild(editorButtonsContainer);
-
-        // 添加保存按钮 (放到容器中) (保持不变)
-        let saveButton = document.createElement('button');
-        saveButton.innerText = '保存';
-        editorButtonsContainer.appendChild(saveButton);
-
-        // 添加关闭按钮 (放到容器中) (保持不变)
-        let closeButton = document.createElement('button');
-        closeButton.innerText = '关闭';
-        editorButtonsContainer.appendChild(closeButton);
-
-
-        //为保存按钮添加事件监听 (修改保存逻辑，使用网站独立的 storageKey) (**关键修复点**)
+        // 保存按钮 (保持不变)
+        const saveButton = replacementEditor.querySelector('#save-button');
         saveButton.addEventListener('click', function() {
             updateReplacementTable();//更新文本替换表
             GM_setValue(storageKey, replacementTable); // 保存到 GM_setValue，使用网站独立的 key
@@ -810,7 +845,8 @@
              }
         });
 
-        //为关闭按钮添加事件监听 (保持不变)
+        // 关闭按钮 (保持不变)
+         const closeButton = replacementEditor.querySelector('#close-button');
          closeButton.addEventListener('click', function() {
               replacementEditor.classList.add('hide'); // 添加隐藏动画 class
              setTimeout(() => {
@@ -823,7 +859,6 @@
 
         displayPage(currentPage); // 初始显示第一页 (保持不变)
         updatePaginationButtons(); // 初始化分页按钮状态 (保持不变)
-        replacementEditor.style.display = 'block'; // 显示编辑器 (保持不变)
     }
 
 
@@ -936,7 +971,7 @@
     // MutationObserver 监听动态内容 (保持不变)
      const observer = new MutationObserver(function(mutations) {
        if (!isReplacementEnabled) {
-            // 如果总开关关闭，不再进行任何替换，但需要处理已添加的节点，确保在关闭状态下不应用替换
+            // 如果总开关关闭，不再进行任何替换，但需要处理已添加的节点，确保在关闭状态下不应用任何替换
             return;
         }
 
@@ -972,4 +1007,6 @@
     observer.observe(document.body, config);
 
     startFadeTimer();
+
+
 })();
