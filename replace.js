@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         动态文本替换悬浮球
 // @namespace    http://yournamespace.com
-// @version      4.0
-// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, 修复新增条目 BUG，界面更紧凑, 新增半透明模糊悬浮窗和按钮效果，更美观, 再次修复新增条目 BUG (v3.8 Bugfix), 美化删除按钮样式为半透明黑色按钮, 全局字体颜色更新为浅色白色系 (v3.9 Font Update), **新增右键选中文本快速替换功能 (v4.0 New Feature)**。
+// @version      4.2
+// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, 修复新增条目 BUG，界面更紧凑, 新增半透明模糊悬浮窗和按钮效果，更美观, 再次修复新增条目 BUG (v3.8 Bugfix), 美化删除按钮样式为半透明黑色按钮, 全局字体颜色更新为浅色白色系 (v3.9 Font Update), 新增右键选中文本快速替换功能 (v4.0 New Feature), 修复新增条目报错，增强动画效果，美化按钮样式 (v4.1 Animation & Button Update), **新增右键替换开关，可禁用默认右键菜单 (v4.2 Toggle Switch Feature)**.
 // @author       你的名字
 // @match        *://*/*
 // @grant        GM_addStyle
@@ -24,6 +24,9 @@
     let replacementTable = GM_getValue(storageKey, {});
     let isReplacementEnabled = GM_getValue(enabledKey, true); // 默认开启替换功能
 
+    // v4.2 新增：右键替换开关状态
+    let isQuickReplaceEnabled = GM_getValue('quickReplaceEnabled', true); // 默认开启右键替换
+
     // 用于存储原始文本的 WeakMap，key 是 TextNode，value 是原始文本
     const originalTextMap = new WeakMap();
     const replacedNodes = new WeakSet(); // 保存已替换的节点，防止重复替换
@@ -31,7 +34,12 @@
     // 立即执行页面替换，防止原文闪烁 (在添加样式和创建元素之前执行)
     replacePage();
 
-    // 定义 CSS 变量和样式 (美化版本 4.0 - 新增右键选中文本快速替换功能)
+    // v4.1 提升作用域：分页相关变量提升到全局作用域
+    const rulesPerPage = 10; // 每页显示规则数量
+    let currentPage = 1; // 当前页码
+    let totalPages = 1; // 总页数，初始值设为1
+
+    // 定义 CSS 变量和样式 (美化版本 4.2 - 新增右键替换开关)
     const styles = `
         :root {
             /* Dark Mode 默认主题色 - 全局浅色字体调整 */
@@ -55,6 +63,8 @@
             --floating-ball-text-color: #333;
             --toggle-indicator-on-color: #69F0AE;
             --toggle-indicator-off-color: #FF5252;
+            --quick-replace-toggle-on-color: #69F0AE; /* v4.2 右键替换开关 ON 颜色 */
+            --quick-replace-toggle-off-color: #FF5252; /* v4.2 右键替换开关 OFF 颜色 */
         }
 
 
@@ -132,7 +142,7 @@
             transform-origin: top center;
             opacity: 0;
             transform: scaleY(0.8);
-            transition: transform 0.3s ease-out, opacity 0.3s ease-out, background-color 0.3s ease-in-out, border-color 0.3s ease-in-out, color 0.3s ease-in-out;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease-out, background-color 0.3s ease-in-out, border-color 0.3s ease-in-out, color 0.3s ease-in-out; /* v4.1 动画增强 */
             user-select: none;
              pointer-events: auto;
              backdrop-filter: blur(8px); /* 添加模糊效果 */
@@ -147,7 +157,7 @@
         #choice-modal.hide {
             opacity: 0;
             transform: scaleY(0.8);
-            transition: transform 0.3s ease-in, opacity 0.3s ease-in;
+            transition: transform 0.2s ease-in, opacity 0.2s ease-in; /* v4.1 动画增强 */
         }
 
           #choice-modal button {
@@ -159,12 +169,17 @@
              background-color: var(--button-bg-color); /* 使用半透明背景色 */
              color: var(--button-text-color); /* 按钮文字颜色，使用 --button-text-color */
              font-size: 0.9em;
-             transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out;
+             transition: background-color 0.2s ease-in-out, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease-in-out, color 0.2s ease-in-out; /* v4.1 动画增强 */
           }
            #choice-modal button:hover {
              background-color: var(--button-hover-bg-color);
              transform: scale(1.05);
-             box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+             box-shadow: 0 3px 7px rgba(0,0,0,0.12); /* v4.1 阴影增强 */
+          }
+          #choice-modal button:active {
+             background-color: var(--button-active-bg-color); /* v4.1 点击反馈 */
+             transform: scale(0.98); /* v4.1 点击反馈 */
+             box-shadow: inset 0 2px 5px rgba(0,0,0,0.15); /* v4.1 点击反馈，内阴影 */
           }
          #replacement-editor {
             position: fixed;
@@ -186,14 +201,19 @@
             flex-direction: column;
             user-select: none;
             pointer-events: auto;
-            transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out, color 0.3s ease-in-out;
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease-out, background-color 0.3s ease-in-out, border-color 0.3s ease-in-out, color 0.3s ease-in-out; /* v4.1 动画增强 */
              backdrop-filter: blur(10px); /* 添加模糊效果，程度稍强 */
              -webkit-backdrop-filter: blur(10px); /* 兼容旧版 Safari */
+         }
+         #replacement-editor.show { /* v4.1 新增 show class，与 choice-modal 保持一致 */
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+            display: flex; /* 确保显示 */
          }
          #replacement-editor.hide {
             opacity: 0;
             transform: translate(-50%, -50%) scale(0.95);
-            transition: opacity 0.3s ease-in, transform 0.3s ease-in;
+            transition: opacity 0.2s ease-in, transform 0.2s ease-in; /* v4.1 动画增强 */
          }
          #replacement-editor h2 {
             text-align: center;
@@ -241,23 +261,33 @@
          }
           #replacement-editor button,
           #replacement-editor .button-pagination-container button,
-          #choice-modal button{
+          #choice-modal button,
+          #quick-replace-modal button { /* v4.1 包含 quick-replace-modal button */
             padding: 7px 10px;
              cursor: pointer;
              border: none;
-             border-radius: 7px;
+             border-radius: 8px;
              background-color: var(--button-bg-color); /* 使用半透明背景色 */
               color: var(--button-text-color); /* 按钮文字颜色，使用 --button-text-color */
-              font-size: 0.85em;
-              transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out;
+              font-size: 0.9em;
+              transition: background-color 0.2s ease-in-out, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease-in-out, color 0.2s ease-in-out; /* v4.1 动画增强 */
           }
           #replacement-editor button:hover,
           #replacement-editor .button-pagination-container button:hover,
-          #choice-modal button:hover {
+          #choice-modal button:hover,
+          #quick-replace-modal button:hover { /* v4.1 包含 quick-replace-modal button */
               background-color: var(--button-hover-bg-color);
-              transform: scale(1.03);
-              box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+              transform: scale(1.05);
+              box-shadow: 0 3px 7px rgba(0,0,0,0.12); /* v4.1 阴影增强 */
            }
+          #replacement-editor button:active,
+          #replacement-editor .button-pagination-container button:active,
+          #choice-modal button:active,
+          #quick-replace-modal button:active { /* v4.1 包含 quick-replace-modal button */
+             background-color: var(--button-active-bg-color); /* v4.1 点击反馈 */
+             transform: scale(0.98); /* v4.1 点击反馈 */
+             box-shadow: inset 0 2px 5px rgba(0,0,0,0.15); /* v4.1 点击反馈，内阴影 */
+          }
             #replacement-editor .button-pagination-container {
                display: flex;
                justify-content: space-around;
@@ -278,7 +308,7 @@
             font-size: 0.8em; /*  文字大小  */
             line-height: 1;
             box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-            transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out;
+            transition: background-color 0.2s ease-in-out, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease-in-out, color 0.2s ease-in-out; /* v4.1 动画增强 */
             display: flex; /* 弹性布局 */
             align-items: center; /* 垂直居中 */
             justify-content: center; /* 水平居中 */
@@ -288,7 +318,12 @@
             #replacement-editor .delete-button-enhanced:hover{
                  background-color: rgba(0, 0, 0, 0.7); /* Hover 时稍微加深背景 */
                  transform: scale(1.05); /*  Hover 时稍微放大  */
-                 box-shadow: 0 3px 5px rgba(0,0,0,0.3);
+                 box-shadow: 0 3px 7px rgba(0,0,0,0.3); /* v4.1 阴影增强 */
+            }
+            #replacement-editor .delete-button-enhanced:active{ /* v4.1 点击反馈 */
+                 background-color: rgba(0, 0, 0, 0.8); /* v4.1 点击反馈 */
+                 transform: scale(0.95); /* v4.1 点击反馈 */
+                 box-shadow: inset 0 3px 5px rgba(0,0,0,0.4); /* v4.1 点击反馈，内阴影 */
             }
 
 
@@ -321,7 +356,7 @@
             border: none;
             color: var(--text-color-light); /*  辅助文本颜色，分页按钮文字  */
             font-size: 0.8em;
-            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, transform 0.2s ease-in-out, color 0.2s ease-in-out;
+            transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), color 0.2s ease-in-out; /* v4.1 动画增强 */
         }
          #replacement-editor .pagination-container button:hover {
              background-color: var(--button-hover-bg-color);
@@ -350,78 +385,57 @@
          background-color: var(--button-bg-color); /* 使用半透明背景色 */
          color: var(--button-text-color); /* 按钮文字颜色，使用 --button-text-color */
          border: none;
-         transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out;
+         transition: background-color 0.2s ease-in-out, transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease-in-out, color 0.2s ease-in-out; /* v4.1 动画增强 */
      }
       #replacement-editor .editor-buttons-container button:hover {
           background-color: var(--button-hover-bg-color);
-          transform: scale(1.02);
-          box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+          transform: scale(1.03);
+          box-shadow: 0 3px 7px rgba(0,0,0,0.12); /* v4.1 阴影增强 */
+      }
+      #replacement-editor .editor-buttons-container button:active { /* v4.1 点击反馈 */
+          background-color: var(--button-active-bg-color); /* v4.1 点击反馈 */
+          transform: scale(0.98); /* v4.1 点击反馈 */
+          box-shadow: inset 0 2px 5px rgba(0,0,0,0.15); /* v4.1 点击反馈，内阴影 */
       }
 
-      #replacement-editor .enable-switch-container {
-         display: none; /* 保持隐藏 */
-         justify-content: flex-end;
-         align-items: center;
-         padding: 10px 20px;
-         border-top: 1px solid var(--border-color);
-         transition: border-color 0.3s ease-in-out;
+      /* v4.2 右键替换开关样式 */
+      #replacement-editor #quick-replace-toggle-container {
+         position: absolute;
+         bottom: 15px;
+         right: 20px;
+         width: 40px;
+         height: 22px;
+         cursor: pointer;
+      }
+      #replacement-editor #quick-replace-toggle-button {
+         position: absolute;
+         top: 0;
+         left: 0;
+         right: 0;
+         bottom: 0;
+         border-radius: 22px;
+         background-color: var(--quick-replace-toggle-on-color); /* 默认绿色 ON */
+         transition: background-color 0.3s ease-in-out;
+         box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+      }
+      #replacement-editor #quick-replace-toggle-button:before {
+         content: '';
+         position: absolute;
+         left: 2px;
+         top: 2px;
+         width: 18px;
+         height: 18px;
+         border-radius: 50%;
+         background-color: #fff;
+         transition: transform 0.3s ease-in-out;
+      }
+      #replacement-editor #quick-replace-toggle-button.off {
+         background-color: var(--quick-replace-toggle-off-color); /* OFF 状态红色 */
+      }
+      #replacement-editor #quick-replace-toggle-button.off:before {
+         transform: translateX(20px); /* OFF 状态滑块位移 */
       }
 
-      #replacement-editor .enable-switch-label {
-         margin-right: 10px;
-         color: var(--text-color-light); /*  辅助文本颜色，开关标签  */
-         font-size: 0.9em;
-      }
-
-      #replacement-editor .enable-switch {
-          position: relative;
-          display: inline-block;
-          width: 40px;
-          height: 22px;
-      }
-
-      #replacement-editor .enable-switch input {
-          opacity: 0;
-          width: 0;
-          height: 0;
-      }
-
-      #replacement-editor .enable-slider {
-          position: absolute;
-          cursor: pointer;
-          top: 0;
-          left: 0;
-          right: 0;
-          bottom: 0;
-          background-color: #888;
-          transition: .4s, background-color 0.3s ease-in-out;
-          border-radius: 22px;
-      }
-
-
-      #replacement-editor .enable-slider:before {
-          position: absolute;
-          content: "";
-          height: 16px;
-          width: 16px;
-          left: 3px;
-          bottom: 3px;
-          background-color: white;
-          transition: .4s;
-          border-radius: 50%;
-      }
-
-      #replacement-editor input:checked + .enable-slider {
-          background-color: #2196F3;
-      }
-
-      #replacement-editor input:focus + .enable-slider {
-          box-shadow: 0 0 1px #2196F3;
-      }
-
-      #replacement-editor input:checked + .enable-slider:before {
-          transform: translateX(18px);
-      }
 
        /* 快速替换模态框样式 */
         #quick-replace-modal {
@@ -436,9 +450,24 @@
             display: none; /* 初始隐藏 */
             min-width: 280px;
             max-width: 400px;
+            opacity: 0; /* v4.1 初始化透明度为0 */
+            transform: scale(0.9); /* v4.1 初始化缩小 */
+            transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.3s ease-out, backdrop-filter 0.3s ease-out, -webkit-backdrop-filter 0.3s ease-out, background-color 0.3s ease-in-out, border-color 0.3s ease-in-out, color 0.3s ease-in-out; /* v4.1 动画增强 */
             backdrop-filter: blur(10px); /* 添加模糊效果 */
             -webkit-backdrop-filter: blur(10px); /* 兼容旧版 Safari */
         }
+        #quick-replace-modal.show { /* v4.1 show class */
+            opacity: 1;
+            transform: scale(1);
+            display: block; /* 确保显示 */
+        }
+        #quick-replace-modal.hide { /* v4.1 hide class */
+            opacity: 0;
+            transform: scale(0.9);
+            transition: transform 0.2s ease-in, opacity 0.2s ease-in; /* v4.1 动画增强 */
+        }
+
+
         #quick-replace-modal h2 {
             text-align: center;
             margin-top: 0;
@@ -463,7 +492,7 @@
         #quick-replace-modal button { /* 复用按钮样式 */
              padding: 9px 14px;
              font-size: 0.9em;
-        }
+          }
 
 
         /* 媒体查询，针对小屏幕设备（例如手机） - 保持极致紧凑样式 */
@@ -496,6 +525,19 @@
              #quick-replace-modal button { /* 移动端快速替换模态框按钮 */
                  padding: 7px 12px;
                  font-size: 0.8em;
+             }
+             #replacement-editor #quick-replace-toggle-container { /* v4.2 移动端调整 */
+                 bottom: 10px;
+                 right: 10px;
+                 width: 32px;
+                 height: 18px;
+             }
+             #replacement-editor #quick-replace-toggle-button:before { /* v4.2 移动端调整 */
+                 width: 14px;
+                 height: 14px;
+              }
+             #replacement-editor #quick-replace-toggle-button.off:before { /* v4.2 移动端调整 */
+                 transform: translateX(14px); /* OFF 状态滑块位移 */
              }
 
 
@@ -602,7 +644,7 @@
     GM_addStyle(styles);
 
 
-    // JavaScript 代码部分 (v4.0 - 新增右键选中文本快速替换功能)
+    // JavaScript 代码部分 (v4.2 - 右键替换开关功能)
         // 创建悬浮球容器元素 (新的容器元素)
     let floatingBallContainer = document.createElement('div');
     floatingBallContainer.id = 'floating-ball-container';
@@ -637,7 +679,7 @@
     `;
     document.body.appendChild(choiceModal);
 
-    //创建文本替换编辑窗口 (移除暗色模式切换按钮)
+    //创建文本替换编辑窗口 (移除暗色模式切换按钮, 添加右键替换开关)
     let replacementEditor = document.createElement('div');
     replacementEditor.id = 'replacement-editor';
     replacementEditor.style.display = 'none'; // 初始化隐藏
@@ -663,16 +705,22 @@
                 <span class="enable-slider"></span>
             </label>
         </div>
+        <div id="quick-replace-toggle-container">  <!-- v4.2 右键替换开关容器 -->
+            <div id="quick-replace-toggle-button" class="${isQuickReplaceEnabled ? 'on' : 'off'}"></div> <!-- v4.2 右键替换开关按钮，初始状态 -->
+        </div>
     `;
     document.body.appendChild(replacementEditor);
 
     // 获取 "新增条目" 按钮 (在 showReplacementEditor 函数外部获取)
     const addButton = replacementEditor.querySelector('#add-rule');
+    // v4.2 获取右键替换开关按钮
+    const quickReplaceToggleButton = replacementEditor.querySelector('#quick-replace-toggle-button');
+
 
     // 创建快速替换模态框 (v4.0 新增)
     let quickReplaceModal = document.createElement('div');
     quickReplaceModal.id = 'quick-replace-modal';
-    quickReplaceModal.style.display = 'none'; // 初始隐藏
+    quickReplaceModal.style.display = 'none'; // 初始化隐藏
     quickReplaceModal.innerHTML = `
         <h2>替换选中文本</h2>
         <input type="text" placeholder="替换为..." id="quick-replace-input">
@@ -794,17 +842,18 @@
    // 显示文本替换编辑器 (保持不变，移除暗色模式切换按钮相关代码)
     function showReplacementEditor() {
         replacementEditor.classList.remove('hide'); // 确保显示时没有隐藏动画 class
-        replacementEditor.style.display = 'block'; // 显示编辑器
+        replacementEditor.classList.add('show'); // v4.1 添加 show class，触发动画
+        replacementEditor.style.display = 'flex'; // 显示编辑器
+
 
         const scrollableContent = replacementEditor.querySelector('.scrollable-content');
         scrollableContent.innerHTML = ''; // 清空之前的编辑器内容
 
         // 加载当前网站的替换表 (保持不变)
         replacementTable = GM_getValue(storageKey, {});
-        const rulesPerPage = 10; // 每页显示规则数量
-        let currentPage = 1; // 当前页码
         const totalRules = Object.keys(replacementTable).length;
-        const totalPages = Math.ceil(totalRules / rulesPerPage) || 1; // 计算总页数，至少为1页
+        totalPages = Math.ceil(totalRules / rulesPerPage) || 1; // 计算总页数，至少为1页  // v4.1 确保 totalPages 被正确赋值
+        currentPage = 1; // 每次打开编辑器重置为第一页 // v4.1 每次打开编辑器重置为第一页
 
         // 分页显示规则 (保持不变)
         function displayPage(page) {
@@ -837,7 +886,6 @@
                     // 删除按钮
                     const deleteButton = document.createElement('button');
                     deleteButton.textContent = 'X';
-                    // deleteButton.className = 'delete-button'; // 移除旧的 class
                     deleteButton.classList.add('delete-button-enhanced'); // 添加新的 class
                     deleteButton.addEventListener('click', function () {
                         const originalKey = originalInput.value;
@@ -894,10 +942,11 @@
 
 
         // 更新分页按钮状态和页码显示 (保持不变)
-        function updatePaginationButtons() {
+        function updatePaginationButtons() { // v4.1 函数作用域调整，确保可以被addButton访问
             prevPageButton.disabled = currentPage <= 1;
             nextPageButton.disabled = currentPage >= totalPages;
         }
+        window.updatePaginationButtons = updatePaginationButtons; // v4.1 暴露到全局，addButton可以访问
 
 
         // 保存按钮 (保持不变)
@@ -905,11 +954,12 @@
         saveButton.addEventListener('click', function() {
             updateReplacementTable();//更新文本替换表
             GM_setValue(storageKey, replacementTable); // 保存到 GM_setValue，使用网站独立的 key
-              replacementEditor.classList.add('hide'); // 添加隐藏动画 class
+              replacementEditor.classList.remove('show'); // v4.1 使用 show/hide class 控制动画
+              replacementEditor.classList.add('hide');
              setTimeout(() => {
                 replacementEditor.style.display = 'none';
                 replacementEditor.classList.remove('hide'); // 移除隐藏动画 class，为下次显示做准备
-             }, 300); // 等待动画结束后隐藏
+             }, 200); // v4.1 动画时间调整为 200ms
              startFadeTimer();
              if (isReplacementEnabled) {
                  replacePage();// 更新页面替换
@@ -919,11 +969,12 @@
         // 关闭按钮 (保持不变)
          const closeButton = replacementEditor.querySelector('#close-button');
          closeButton.addEventListener('click', function() {
-              replacementEditor.classList.add('hide'); // 添加隐藏动画 class
+              replacementEditor.classList.remove('show'); // v4.1 使用 show/hide class 控制动画
+              replacementEditor.classList.add('hide');
              setTimeout(() => {
                 replacementEditor.style.display = 'none';
                 replacementEditor.classList.remove('hide'); // 移除隐藏动画 class，为下次显示做准备
-             }, 300); // 等待动画结束后隐藏
+             }, 200); // v4.1 动画时间调整为 200ms
               startFadeTimer();
         });
 
@@ -1107,6 +1158,10 @@
             scrollableContent.removeChild(replacementRow);
             updateReplacementTable();
             replacePage();
+            // 重新计算总页数并更新分页按钮状态
+            const updatedTotalRules = Object.keys(replacementTable).length;
+            totalPages = Math.ceil(updatedTotalRules / rulesPerPage) || 1;
+            updatePaginationButtons(); // v4.1 直接调用全局函数
         });
         replacementRow.appendChild(deleteButton);
         const scrollableContent = replacementEditor.querySelector('.scrollable-content'); // 需要在这里获取 scrollableContent
@@ -1114,11 +1169,8 @@
 
          // 重新计算总页数并更新分页按钮状态 (新增条目后页数可能增加)
         const updatedTotalRules = Object.keys(replacementTable).length;
-        const totalPages = Math.ceil(updatedTotalRules / rulesPerPage) || 1;
-        const updatePaginationButtons = replacementEditor.querySelector('#add-rule').closest('.button-pagination-container').querySelector('#prev-page').closest('#replacement-editor').querySelector('#updatePaginationButtons'); // 获取 updatePaginationButtons 函数引用 (如果需要，这里简化了，实际代码中 updatePaginationButtons 函数应该在作用域内可访问)
-        if(updatePaginationButtons) { // 检查函数是否存在，避免报错
-            updatePaginationButtons();
-        }
+        totalPages = Math.ceil(updatedTotalRules / rulesPerPage) || 1;
+        updatePaginationButtons(); // v4.1 直接调用全局函数
         // 移除 displayPage(currentPage);  不再强制刷新当前页
     });
 
@@ -1126,15 +1178,11 @@
     // v4.0 新增：监听 contextmenu 事件 (右键菜单事件)
     document.addEventListener('contextmenu', function(event) {
         const selectedText = window.getSelection().toString().trim();
-        if (selectedText) {
-            // 可以选择阻止默认右键菜单 event.preventDefault();  但这里为了更贴近用户习惯，不阻止默认菜单，只是添加功能
-
-            // 模拟添加一个“替换”菜单项 (实际是利用用户点击事件判断)
-            // 可以在右键菜单的合适位置，告知用户有“替换”功能，例如在菜单底部添加说明文字
-            // 这里为了简化，直接在点击右键后，如果选中了文本，就立即显示快速替换模态框
-
+        if (selectedText && isQuickReplaceEnabled) { // v4.2 检查右键替换开关状态
+            event.preventDefault(); // v4.2 阻止默认右键菜单
             showQuickReplaceModal(selectedText, event.clientX, event.clientY); // 显示快速替换模态框
         }
+         // v4.2 如果 isQuickReplaceEnabled 为 false，则不阻止默认菜单，显示浏览器原生菜单
     });
 
     // v4.0 新增：显示快速替换模态框
@@ -1144,8 +1192,9 @@
         input.value = ""; // 清空上次输入的内容
         modal.style.left = x + 'px';
         modal.style.top = y + 'px';
-        modal.style.display = 'block';
-        modal.selectedText = selectedText; // 存储选中的文本到模态框对象
+        modal.classList.add('show'); // v4.1 添加 show class，触发动画
+        modal.style.display = 'block'; // v4.1 确保显示
+        modal.selectedText = selectedText; // 存储选中文本到模态框对象
 
         // 聚焦输入框，方便用户直接输入
         input.focus();
@@ -1154,7 +1203,12 @@
     // v4.0 新增：隐藏快速替换模态框
     function hideQuickReplaceModal() {
         const modal = document.getElementById('quick-replace-modal');
-        modal.style.display = 'none';
+        modal.classList.remove('show'); // v4.1 添加 hide class，触发动画
+        modal.classList.add('hide');
+        setTimeout(() => {
+             modal.style.display = 'none';
+             modal.classList.remove('hide'); // 移除隐藏动画 class，为下次显示做准备
+        }, 200); // v4.1 动画时间调整为 200ms
     }
 
     // v4.0 新增：快速替换模态框 - "确定" 按钮事件监听器
@@ -1176,6 +1230,14 @@
     // v4.0 新增：快速替换模态框 - "取消" 按钮事件监听器
     document.getElementById('quick-replace-cancel-button').addEventListener('click', function() {
         hideQuickReplaceModal(); // 关闭模态框
+    });
+
+    // v4.2 新增：右键替换开关 - 点击事件监听器
+    quickReplaceToggleButton.addEventListener('click', function() {
+        isQuickReplaceEnabled = !isQuickReplaceEnabled; // 切换状态
+        quickReplaceToggleButton.classList.toggle('on'); // 切换 .on class
+        quickReplaceToggleButton.classList.toggle('off'); // 切换 .off class
+        GM_setValue('quickReplaceEnabled', isQuickReplaceEnabled); // 保存状态
     });
 
 
