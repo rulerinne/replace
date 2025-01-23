@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         动态文本替换悬浮球
 // @namespace    http://yournamespace.com
-// @version      4.4i
-// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, 修复新增条目 BUG，界面更紧凑, 新增半透明模糊悬浮窗和按钮效果，更美观, 再次修复新增条目 BUG (v3.8 Bugfix), 美化删除按钮样式为半透明黑色按钮, 全局字体颜色更新为浅色白色系 (v3.9 Font Update), 新增右键选中文本快速替换功能 (v4.0 New Feature), 修复新增条目报错，增强动画效果，美化按钮样式 (v4.1 Animation & Button Update), 新增右键替换开关，可禁用默认右键菜单 (v4.2 Toggle Switch Feature), 全面增强弹出窗口和按钮动画效果 (v4.3 Animation Overhaul), 美化滑动条，调整输入框宽度，固定编辑器窗口大小 (v4.4 UI Refinements), 修复匹配不严格问题，实现全词严格匹配 (v4.4c Strict Matching Fix), 添加 null 检查，增强代码健壮性，尝试解决 `nodeType` is null 错误 (v4.4d Null Check), 在文本替换规则编辑界面右下角新增右键替换开关 (v4.4e Editor Switch), 全面适配手机端网页浏览，优化悬浮窗显示 (v4.4f Mobile Adaption), 手机端规则条目极致紧凑横向排版优化 (v4.4g Mobile Layout Refine), **手机端极致紧凑，电脑端正常显示，区分平台适配 (v4.4i Platform Adaption)**.
+// @version      4.4j
+// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, 修复新增条目 BUG，界面更紧凑, 新增半透明模糊悬浮窗和按钮效果，更美观, 再次修复新增条目 BUG (v3.8 Bugfix), 美化删除按钮样式为半透明黑色按钮, 全局字体颜色更新为浅色白色系 (v3.9 Font Update), 新增右键选中文本快速替换功能 (v4.0 New Feature), 修复新增条目报错，增强动画效果，美化按钮样式 (v4.1 Animation & Button Update), 新增右键替换开关，可禁用默认右键菜单 (v4.2 Toggle Switch Feature), 全面增强弹出窗口和按钮动画效果 (v4.3 Animation Overhaul), 美化滑动条，调整输入框宽度，固定编辑器窗口大小 (v4.4 UI Refinements), 修复匹配不严格问题，实现全词严格匹配 (v4.4c Strict Matching Fix), 添加 null 检查，增强代码健壮性，尝试解决 `nodeType` is null 错误 (v4.4d Null Check), 在文本替换规则编辑界面右下角新增右键替换开关 (v4.4e Editor Switch), 全面适配手机端网页浏览，优化悬浮窗显示 (v4.4f Mobile Adaption), 手机端规则条目极致紧凑横向排版优化 (v4.4g Mobile Layout Refine), **手机端极致紧凑横向排版再优化，修复悬浮球不显示和 appendChild 错误 (v4.4j Mobile Layout & Bugfix)**.
 // @author       你的名字
 // @match        *://*/*
 // @grant        GM_addStyle
@@ -480,36 +480,37 @@
              }
              #replacement-editor label { /* v4.4f 移动端 label 字体大小 */
                  font-size: 0.75em; /* v4.4h 极致紧凑字体 */
-                 margin-bottom: 2px; /* v4.4h label margin-bottom 减小 */
+                 margin-bottom: 0; /* v4.4h label margin-bottom 移除 */
+                 margin-right: 2px; /* v4.4j  增加 label margin-right */
              }
              #replacement-editor input { /* v4.4f 移动端 input 字体和 padding */
                  font-size: 0.75em; /* v4.4h 极致紧凑字体 */
                  padding: 3px; /* v4.4h 极致紧凑 padding */
                  border-radius: 4px; /* v4.4h 更小圆角 */
-                 margin-bottom: 6px; /* v4.4h input margin-bottom 减小 */
-                 width: 120px; /* v4.4h 极小宽度 */
+                 margin-bottom: 0; /* v4.4h input margin-bottom 移除 */
+                 width: 90px; /* v4.4j  进一步减小输入框宽度 */
              }
              #replacement-editor button, /* v4.4f 移动端 按钮字体和 padding */
              #replacement-editor .button-pagination-container button,
              #replacement-editor .editor-buttons-container button,
              #replacement-editor .pagination-container button,
              #quick-replace-modal button {
-                 padding: 5px 8px; /* v4.4h 极致紧凑 padding */
-                 font-size: 0.8em; /* v4.4h 极致紧凑字体 */
-                 border-radius: 6px; /* v4.4h 更小圆角 */
+                 padding: 4px 6px; /* v4.4h 极致紧凑 padding */
+                 font-size: 0.75em; /* v4.4h 极致紧凑字体 */
+                 border-radius: 4px; /* v4.4h 更小圆角 */
                  margin: 0; /* v4.4h 移除 margin */
              }
              #replacement-editor .editor-buttons-container { /* v4.4f 移动端 编辑按钮容器 margin-bottom 减小 */
                  padding-bottom: 8px; /* v4.4h padding-bottom 减小 */
-                 gap: 8px; /* v4.4h 按钮间距减小 */
+                 gap: 6px; /* v4.4j 按钮间距进一步减小 */
              }
              #replacement-editor .button-pagination-container { /* v4.4f 移动端 分页按钮容器 padding 减小 */
-                 padding-top: 5px; /* v4.4h padding-top 减小 */
-                 padding-bottom: 5px; /* v4.4h padding-bottom 减小 */
+                 padding-top: 4px; /* v4.4j padding-top 进一步减小 */
+                 padding-bottom: 4px; /* v4.4j padding-bottom 进一步减小 */
                   margin: 0; /* v4.4h 移除 margin */
              }
              #quick-replace-modal { /* v4.4f 移动端 快速替换 modal 样式 */
-                 padding: 10px 15px; /* v4.4f 极致紧凑 padding */
+                 padding: 8px 12px; /* v4.4f 极致紧凑 padding */
              }
              #quick-replace-modal h2 { /* v4.4f 移动端 快速替换 modal 标题字体大小 */
                  margin-bottom: 8px; /* v4.4h margin-bottom 减小 */
@@ -521,37 +522,38 @@
              }
              #replacement-editor .replacement-row { /* v4.4g 移动端 replacement-row 增加 padding-right 留出删除按钮空间 */
                  padding-right: 20px; /* v4.4h padding-right 进一步减小 */
-                  margin-bottom: 10px; /* v4.4g 增加 replacement-row 的 margin-bottom */
-                    flex-direction: column; /* v4.4g 垂直排列 */
-                    align-items: stretch; /* v4.4g 拉伸对齐 */
-                    display: flex; /* v4.4g 恢复 flex 布局 */
-             }
+                 margin-bottom: 4px; /* v4.4j 进一步减小 replacement-row 的 margin-bottom */
+                 flex-direction: row; /* v4.4j 恢复横向排版 */
+                 align-items: baseline; /* v4.4j 恢复 baseline 对齐 */
+                 display: flex; /* v4.4j 恢复 flex 布局 */
+            }
              #replacement-editor label {
-                 flex-basis: auto; /* v4.4g flex-basis 设为 auto */
-                 text-align: left; /* v4.4g label 左对齐 */
-                 white-space: normal; /* v4.4g 允许 label 文本换行 */
-                 margin-right: 0; /* v4.4g 移除 label 的 margin-right */
+                 flex-basis: 30px; /* v4.4j  进一步减小 label 宽度 */
+                 text-align: right; /* v4.4g label 左对齐 */
+                 white-space: nowrap; /* v4.4g 允许 label 文本换行 */
+                 margin-right: 2px; /* v4.4j  增加 label margin-right */
              }
              #replacement-editor input {
-                  width: calc(100% - 10px); /* v4.4g 输入框宽度 100% 减去一些 padding */
+                  width: 100px; /* v4.4j  进一步减小输入框宽度 */
+                  flex-grow: 1; /* v4.4j  输入框 flex-grow: 1, 占据剩余空间 */
              }
              #replacement-editor .delete-button-enhanced { /* v4.4g 移动端 delete-button 字体和尺寸进一步减小 */
                  font-size: 0.6em; /* v4.4h 极小字体 */
-                 width: 24px; /*  固定宽度  v4.4h 恢复 width: 24px  (调整为稍大尺寸，方便点击) */
-                 height: 24px; /*  固定高度  v4.4h 恢复 height: 24px (调整为稍大尺寸，方便点击) */
-                 border-radius: 6px; /* v4.4h 更小圆角 */
-                 position: relative; /* v4.4g 移除绝对定位 */
-                 top: auto; /* v4.4g 移除 top 定位 */
-                 right: auto; /* v4.4g 移除 right 定位 */
-                 transform: none; /* v4.4g 移除 transform */
-                 margin-left: auto; /* v4.4g 恢复 margin-left: auto; */
+                 width: 18px; /*  固定宽度  v4.4h 更小尺寸 */
+                 height: 18px; /*  固定高度  v4.4h 更小尺寸 */
+                 border-radius: 4px; /* v4.4j 更小圆角 */
+                 position: absolute; /* v4.4g 移除绝对定位 */
+                 top: 50%; /* v4.4j 垂直居中 */
+                 right: 0; /* v4.4j  右对齐 */
+                 transform: translateY(-50%); /* v4.4j 垂直居中微调 */
+                 margin-left: 0; /* v4.4g 恢复 margin-left: auto; */
              }
              #replacement-editor .scrollable-container { /* v4.4h 移动端 scrollable-container padding 减小 */
-                 padding-right: 8px; /* v4.4h 恢复 padding-right: 8px */
+                 padding-right: 4px; /* v4.4h padding-right 减小 */
              }
              #replacement-editor .scrollable-content { /* v4.4h 移动端 scrollable-content padding 减小 */
-                 padding-right: 8px; /* v4.4h 恢复 padding-right: 8px */
-                 padding-bottom: 6px; /* v4.4h 恢复 padding-bottom: 6px */
+                 padding-right: 4px; /* v4.4h padding-right 减小 */
+                 padding-bottom: 4px; /* v4.4h padding-bottom 减小 */
              }
         }
 
@@ -666,7 +668,7 @@
             </label>
         </div>
         <div id="quick-replace-toggle-container">  <!-- v4.2 悬浮球右键替换开关容器 -->
-            <div id="quick-replace-toggle-button" class="${isQuickReplaceEnabled ? 'on' : 'off'}"></div> <!-- v4.2 悬浮球右键替换开关按钮，初始状态 -->
+            <div id="quick-replace-toggle-button" class="${isQuickReplaceEnabled ? 'on' : 'off'}"></div> <!-- v4.2 右键替换开关按钮，初始状态 -->
         </div>
         <div id="editor-quick-replace-switch-container">  <!-- v4.4e 编辑器窗口右下角右键开关容器 -->
             <div id="editor-quick-replace-switch-button" class="${isQuickReplaceEnabled ? 'on' : 'off'}"></div> <!-- v4.4e 编辑器窗口右下角右键开关按钮，初始状态 -->
