@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         动态文本替换悬浮球
 // @namespace    http://yournamespace.com
-// @version      4.4k
-// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, 修复新增条目 BUG，界面更紧凑, 新增半透明模糊悬浮窗和按钮效果，更美观, 再次修复新增条目 BUG (v3.8 Bugfix), 美化删除按钮样式为半透明黑色按钮, 全局字体颜色更新为浅色白色系 (v3.9 Font Update), 新增右键选中文本快速替换功能 (v4.0 New Feature), 修复新增条目报错，增强动画效果，美化按钮样式 (v4.1 Animation & Button Update), 新增右键替换开关，可禁用默认右键菜单 (v4.2 Toggle Switch Feature), 全面增强弹出窗口和按钮动画效果 (v4.3 Animation Overhaul), 美化滑动条，调整输入框宽度，固定编辑器窗口大小 (v4.4 UI Refinements), 修复匹配不严格问题，实现全词严格匹配 (v4.4c Strict Matching Fix), 添加 null 检查，增强代码健壮性，尝试解决 `nodeType` is null 错误 (v4.4d Null Check), 在文本替换规则编辑界面右下角新增右键替换开关 (v4.4e Editor Switch), 全面适配手机端网页浏览，优化悬浮窗显示 (v4.4f Mobile Adaption), 手机端规则条目极致紧凑横向排版优化 (v4.4g Mobile Layout Refine), 手机端极致紧凑横向排版再优化，修复悬浮球不显示和 appendChild 错误 (v4.4j Mobile Layout & Bugfix), **手机端字体和排版优化，彻底修复分页 BUG (v4.4k Mobile Font & Pagination Fix)**.
+// @version      4.4m
+// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, 修复新增条目 BUG，界面更紧凑, 新增半透明模糊悬浮窗和按钮效果，更美观, 再次修复新增条目 BUG (v3.8 Bugfix), 美化删除按钮样式为半透明黑色按钮, 全局字体颜色更新为浅色白色系 (v3.9 Font Update), 新增右键选中文本快速替换功能 (v4.0 New Feature), 修复新增条目报错，增强动画效果，美化按钮样式 (v4.1 Animation & Button Update), 新增右键替换开关，可禁用默认右键菜单 (v4.2 Toggle Switch Feature), 全面增强弹出窗口和按钮动画效果 (v4.3 Animation Overhaul), 美化滑动条，调整输入框宽度，固定编辑器窗口大小 (v4.4 UI Refinements), 修复匹配不严格问题，实现全词严格匹配 (v4.4c Strict Matching Fix), 添加 null 检查，增强代码健壮性，尝试解决 `nodeType` is null 错误 (v4.4d Null Check), 在文本替换规则编辑界面右下角新增右键替换开关 (v4.4e Editor Switch), 全面适配手机端网页浏览，优化悬浮窗显示 (v4.4f Mobile Adaption), 手机端规则条目极致紧凑排版优化 (v4.4g Mobile Layout Refine), 手机端极致紧凑横向排版再优化，修复悬浮球不显示和 appendChild 错误 (v4.4j Mobile Layout & Bugfix), 手机端字体和排版优化，彻底修复分页 BUG (v4.4k Mobile Font & Pagination Fix), **电脑端恢复显示右键开关 & 手机端隐藏 (v4.4l Switch Display Platform Fix), 电脑端恢复显示右键开关 & 手机端隐藏 (v4.4m Switch Display Platform Fix)**.
 // @author       你的名字
 // @match        *://*/*
 // @grant        GM_addStyle
@@ -547,6 +547,9 @@
                  right: 0; /* v4.4j  右对齐 */
                  transform: translateY(-50%); /* v4.4j 垂直居中微调 */
                  margin-left: 0; /* v4.4g 恢复 margin-left: auto; */
+             }
+             #replacement-editor #editor-quick-replace-switch-container { /* v4.4l 隐藏手机端右键开关 */
+                display: none !important;
              }
              #replacement-editor .scrollable-container { /* v4.4h 移动端 scrollable-container padding 减小 */
                  padding-right: 4px; /* v4.4h padding-right 减小 */
