@@ -2,13 +2,14 @@
 // @name         动态文本替换悬浮球
 // @namespace    http://yournamespace.com
 // @version      3.1
-// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示, **新增：根据屏幕宽度自动切换电脑/手机样式**。
+// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, **新增分辨率自适应样式，电脑端显示更清晰**。
 // @author       你的名字
 // @match        *://*/*
 // @grant        GM_addStyle
 // @grant        GM_setValue
 // @grant        GM_getValue
 // @run-at       document-end
+// @updateURL    https://raw.githubusercontent.com/rulerinne/replace/refs/heads/main/replace.js
 // ==/UserScript==
 
 (function() {
@@ -27,10 +28,7 @@
     const originalTextMap = new WeakMap();
     const replacedNodes = new WeakSet(); // 保存已替换的节点，防止重复替换
 
-    // 判断是否为手机屏幕 (宽度小于 768px 时认为是手机)
-    const isMobileScreen = window.innerWidth <= 768;
-
-    // 添加 CSS 样式 (美化版本 3.1 - 自动切换电脑/手机样式)
+     // 添加 CSS 样式 (美化版本 3.1 - 分辨率自适应样式，电脑端更清晰)
     GM_addStyle(`
         #floating-ball-container {
             position: fixed;
@@ -145,7 +143,7 @@
             display: none;
             max-height: 85vh;
             overflow-y: auto;
-            width: 550px; /* **电脑端默认宽度** */
+            width: 550px;
             border-radius: 16px;
             display: flex;
             flex-direction: column;
@@ -159,60 +157,60 @@
          }
         #replacement-editor .replacement-row {
            display: flex;
-           margin-bottom: 8px; /* **电脑端默认行间距** */
+           margin-bottom: 8px; /* 稍微减小行间距 */
             align-items: center;
         }
         #replacement-editor label {
-             margin-right: 4px; /* **电脑端默认 label 右边距** */
-             flex-basis: 60px; /* **电脑端默认 label 宽度** */
+             margin-right: 4px; /* 稍微减小 label 右边距 */
+             flex-basis: 60px; /* 缩小 label 宽度 */
              text-align: right;
              white-space: nowrap;
              color: #555;
-             font-size: 0.9em; /* **电脑端默认 label 字体** */
-             line-height: inherit; /* 移除 label 的 line-height 强制垂直居中 */
+             font-size: 0.9em; /* 稍微缩小 label 字体 */
+             line-height: normal; /* 恢复 label 行高默认值 */
         }
         #replacement-editor input {
            flex-grow: 1;
-           padding: 6px; /* **电脑端默认 input 内边距** */
+           padding: 6px; /* 稍微减小 input 内边距 */
            border: 1px solid #eee;
-           border-radius: 6px; /* **电脑端默认 input 圆角** */
-           font-size: 0.9em; /* **电脑端默认 input 字体** */
+           border-radius: 6px; /* 稍微减小 input 圆角 */
+           font-size: 0.9em; /* 稍微缩小 input 字体 */
            color: #444;
            background-color: #fff;
            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
            user-select: text !important;
-           min-width: auto; /* 恢复 input 默认 min-width */
+           min-width: auto; /* 恢复 input 最小宽度默认值 */
         }
          #replacement-editor input:focus {
              border-color: #ccc;
-             box-shadow: 0 0 5px rgba(0, 0, 0, 0.08); /* 电脑端默认 focus 效果 */
+             box-shadow: 0 0 5px rgba(0, 0, 0, 0.08); /* 恢复 focus 效果 */
              outline: none;
          }
           #replacement-editor button {
-            padding: 8px 12px; /* **电脑端默认 button 内边距** */
+            padding: 8px 12px;
              cursor: pointer;
              border: none;
-             border-radius: 8px; /* **电脑端默认 button 圆角** */
+             border-radius: 8px; /* 恢复 button 圆角 */
              background-color: #f0f0f0;
               color: #333;
-              font-size: 0.9em; /* **电脑端默认 button 字体** */
+              font-size: 0.9em; /* 恢复 button 字体 */
               transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
           }
           #replacement-editor button:hover {
               background-color: #e0e0e0;
               transform: scale(1.03);
-              box-shadow: 0 2px 4px rgba(0,0,0,0.08); /* 电脑端默认 hover 阴影 */
+              box-shadow: 0 2px 4px rgba(0,0,0,0.08); /* 恢复 hover 阴影 */
            }
             #replacement-editor .button-pagination-container {
                display: flex;
                justify-content: space-around;
                align-items: center;
-               margin-top: 10px; /* **电脑端默认 上边距** */
-               margin-bottom: 10px; /* **电脑端默认 下边距** */
+               margin-top: 10px; /* 稍微减小 上边距 */
+               margin-bottom: 10px; /* 稍微减小 下边距 */
             }
             #replacement-editor .button-pagination-container button{
               background-color: #e0e0e0;
-                padding: 8px 12px; /* **电脑端默认 分页按钮内边距** */
+                padding: 8px 12px;
              }
             #replacement-editor .button-pagination-container button:hover{
                background-color: #d0d0d0;
@@ -221,32 +219,32 @@
               background-color: #f44336;
               color: white;
              border-radius: 50%;
-             padding: 3px 6px; /* **电脑端默认 删除按钮内边距** */
+             padding: 3px 6px;
              border: none;
-              margin-left: 4px; /* **电脑端默认 删除按钮 左边距** */
+              margin-left: 4px;
             cursor: pointer;
-            font-size: 0.75em; /* **电脑端默认 删除按钮字体** */
+            font-size: 0.75em;
             line-height: 1;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.2); /* 电脑端默认 删除按钮阴影 */
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2); /* 恢复删除按钮阴影 */
             transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
             }
             #replacement-editor .delete-button:hover{
                  background-color: #d32f2f;
                  transform: scale(1.1);
-                 box-shadow: 0 3px 5px rgba(0,0,0,0.3); /* 电脑端默认 删除按钮 hover 阴影 */
+                 box-shadow: 0 3px 5px rgba(0,0,0,0.3); /* 恢复删除按钮 hover 阴影 */
             }
             #replacement-editor .scrollable-container {
                overflow-x: hidden;
               overflow-y: auto;
                 max-height: 300px;
-                padding-right: 8px; /* **电脑端默认 滚动容器右内边距** */
-                border-radius: 12px; /* **电脑端默认 滚动容器圆角** */
+                padding-right: 8px;
+                border-radius: 12px;
             }
             #replacement-editor .scrollable-content {
                display: flex;
                 flex-direction: column;
-                padding-right: 8px; /* **电脑端默认 内容容器右内边距** */
-                padding-bottom: 5px; /* **电脑端默认 内容容器下内边距** */
+                padding-right: 8px;
+                padding-bottom: 5px;
             }
 
 
@@ -255,13 +253,13 @@
 
 
         #replacement-editor .pagination-container button {
-            margin: 0 4px; /* **电脑端默认 分页按钮 左右margin** */
-            padding: 6px 10px; /* **电脑端默认 分页按钮 内边距** */
-            border-radius: 6px; /* **电脑端默认 分页按钮圆角** */
+            margin: 0 4px;
+            padding: 6px 10px;
+            border-radius: 6px;
             background-color: #f0f0f0;
             border: none;
             color: #555;
-            font-size: 0.85em; /* **电脑端默认 分页按钮 字体** */
+            font-size: 0.85em;
             transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out;
         }
          #replacement-editor .pagination-container button:hover {
@@ -278,16 +276,16 @@
        #replacement-editor .editor-buttons-container {
          display: flex;
          justify-content: center;
-         gap: 10px; /* **电脑端默认 保存/关闭按钮 间距** */
-         margin-top: 10px; /* **电脑端默认 上边距** */
-         margin-bottom: 15px; /* **电脑端默认 下边距** */
+         gap: 10px;
+         margin-top: 10px;
+         margin-bottom: 15px;
        }
        #replacement-editor .editor-buttons-container button {
          display: inline-block;
          margin: 0;
-         padding: 10px 16px; /* **电脑端默认 保存/关闭按钮 内边距** */
-         border-radius: 10px; /* **电脑端默认 保存/关闭按钮圆角** */
-         font-size: 0.9em; /* **电脑端默认 保存/关闭按钮 字体** */
+         padding: 10px 16px;
+         border-radius: 10px;
+         font-size: 0.9em;
          background-color: #e6e6e6;
          color: #333;
          border: none;
@@ -296,7 +294,7 @@
       #replacement-editor .editor-buttons-container button:hover {
           background-color: #d0d0d0;
           transform: scale(1.02);
-          box-shadow: 0 2px 4px rgba(0,0,0,0.08); /* 电脑端默认 保存/关闭按钮 hover 阴影 */
+          box-shadow: 0 2px 4px rgba(0,0,0,0.08);
       }
 
       #replacement-editor .enable-switch-container {
@@ -363,26 +361,26 @@
       }
 
 
-       /* 滚动条美化 (Webkit based browsers) */
+       /* 滚动条美化 (Webkit based browsers) - 电脑端 恢复稍宽滚动条 */
         #replacement-editor .scrollable-container::-webkit-scrollbar {
-            width: 8px; /* **电脑端默认滚动条宽度** */
+            width: 8px;
         }
 
         #replacement-editor .scrollable-container::-webkit-scrollbar-track {
             background-color: #f1f1f1;
-            border-radius: 10px; /* **电脑端默认滚动条圆角** */
+            border-radius: 10px;
         }
 
         #replacement-editor .scrollable-container::-webkit-scrollbar-thumb {
             background-color: #ccc;
-            border-radius: 10px; /* **电脑端默认滚动条滑块圆角** */
+            border-radius: 10px;
         }
 
         #replacement-editor .scrollable-container::-webkit-scrollbar-thumb:hover {
             background-color: #aaa;
         }
 
-        /* 媒体查询，针对小屏幕设备（例如手机） */
+        /* 媒体查询，针对小屏幕设备（例如手机） - 保持极致紧凑样式 */
         @media (max-width: 768px) {
             #floating-ball-container {
                 width: 36px;
@@ -411,52 +409,66 @@
                 margin: 4px 5px;
             }
             #replacement-editor {
-                position: fixed; /* 确保 fixed 定位 */
+                position: fixed;
                 top: 50%;
                 left: 50%;
-                transform: translate(-50%, -50%); /* 居中定位 */
-                width: 95%; /* 宽度占据屏幕 95% */
-                max-width: 320px; /* **手机端更窄编辑器最大宽度** */
-                max-height: 80vh; /* 高度略微增加 */
-                padding: 10px; /* **手机端极小 编辑器 padding** */
-                font-size: 0.85em; /* 手机端编辑器字体稍微缩小 */
+                transform: translate(-50%, -50%);
+                width: 95%;
+                max-width: 320px;
+                max-height: 80vh;
+                padding: 10px;
+                font-size: 0.85em;
             }
             #replacement-editor .replacement-row {
-                flex-direction: row;
-                align-items: center;
-                margin-bottom: 2px; /* **手机端极小行间距** */
+                margin-bottom: 2px;
             }
             #replacement-editor label {
-                text-align: right;
-                margin-bottom: 0;
-                flex-basis: 30px; /* **手机端极小 label 宽度** */
-                font-size: 0.75em; /* **手机端极小 label 字体** */
-                margin-right: 1px; /* **手机端极小 label 右边距** */
-                line-height: 1; /* 垂直居中 label 文本 */
+                flex-basis: 30px;
+                font-size: 0.75em;
+                margin-right: 1px;
+                line-height: 1;
             }
             #replacement-editor input {
-                padding: 2px 3px; /* **手机端极小 input 内边距** */
-                font-size: 0.75em; /* **手机端极小 input 字体** */
-                margin-bottom: 0;
-                border-radius: 3px; /* **手机端极小 input 圆角** */
+                padding: 2px 3px;
+                font-size: 0.75em;
+                border-radius: 3px;
+                min-width: 0;
             }
             #replacement-editor button,
             #replacement-editor .button-pagination-container button,
             #replacement-editor .editor-buttons-container button,
             #replacement-editor .pagination-container button {
                 padding: 4px 6px;
-                font-size: 0.75em; /* **手机端极小 按钮字体** */
-                margin: 1px; /* **手机端极小 按钮 margin** */
-                border-radius: 5px; /* **手机端极小 按钮圆角** */
+                font-size: 0.75em;
+                margin: 1px;
+                border-radius: 5px;
             }
             #replacement-editor .delete-button {
-                padding: 1px 2px; /* **手机端极小 删除按钮内边距** */
-                font-size: 0.55em; /* **手机端极小 删除按钮字体** */
-                margin-left: 1px; /* **手机端极小 删除按钮左边距** */
+                padding: 1px 2px;
+                font-size: 0.55em;
+                margin-left: 1px;
             }
             #replacement-editor .scrollable-container {
-                padding-right: 4px; /* **手机端极小 滚动容器右内边距** */
-                border-radius: 8px; /* **手机端极小 滚动容器圆角** */
+                padding-right: 4px;
+                border-radius: 8px;
+            }
+             /* 滚动条美化 (Webkit based browsers) - 手机端 恢复极窄滚动条 */
+            #replacement-editor .scrollable-container::-webkit-scrollbar {
+                width: 5px;
+            }
+
+            #replacement-editor .scrollable-container::-webkit-scrollbar-track {
+                background-color: #f1f1f1;
+                border-radius: 6px;
+            }
+
+            #replacement-editor .scrollable-container::-webkit-scrollbar-thumb {
+                background-color: #ccc;
+                border-radius: 6px;
+            }
+
+            #replacement-editor .scrollable-container::-webkit-scrollbar-thumb:hover {
+                background-color: #aaa;
             }
         }
 
@@ -786,7 +798,7 @@
          closeButton.addEventListener('click', function() {
               replacementEditor.classList.add('hide'); // 添加隐藏动画 class
              setTimeout(() => {
-                replacementEditor.style.display: none;
+                replacementEditor.style.display = 'none';
                 replacementEditor.classList.remove('hide'); // 移除隐藏动画 class，为下次显示做准备
              }, 300); // 等待动画结束后隐藏
               startFadeTimer();
