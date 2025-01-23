@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         动态文本替换悬浮球
 // @namespace    http://yournamespace.com
-// @version      3.8
-// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, 修复新增条目 BUG，界面更紧凑, 新增半透明模糊悬浮窗和按钮效果，更美观, **再次修复新增条目 BUG (v3.8 Bugfix)**。
+// @version      3.9
+// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, 修复新增条目 BUG，界面更紧凑, 新增半透明模糊悬浮窗和按钮效果，更美观, 再次修复新增条目 BUG (v3.8 Bugfix), **美化删除按钮样式为半透明黑色按钮**。
 // @author       你的名字
 // @match        *://*/*
 // @grant        GM_addStyle
@@ -31,7 +31,7 @@
     // 立即执行页面替换，防止原文闪烁 (在添加样式和创建元素之前执行)
     replacePage();
 
-    // 定义 CSS 变量和样式 (美化版本 3.8 - 新增半透明模糊悬浮窗和按钮效果)
+    // 定义 CSS 变量和样式 (美化版本 3.9 - 美化删除按钮样式为半透明黑色按钮)
     const styles = `
         :root {
             /* Dark Mode 默认主题色 */
@@ -46,8 +46,8 @@
             --button-hover-bg-color: var(--hover-bg-color);
             --button-active-bg-color: #555;
             --button-text-color: var(--text-color);
-            --button-delete-bg-color: #f44336;
-            --button-delete-hover-bg-color: #d32f2f;
+            --button-delete-bg-color: #f44336; /* 保持删除按钮 hover 时的红色 */
+            --button-delete-hover-bg-color: #d32f2f; /* 保持删除按钮 hover 时的红色 */
             --scroll-track-color: #333;
             --scroll-thumb-color: #666;
             --scroll-thumb-hover-color: #888;
@@ -262,24 +262,32 @@
                margin-bottom: 12px;
             }
 
-           #replacement-editor .delete-button {
-              background-color: var(--button-delete-bg-color);
-              color: white;
-             border-radius: 50%;
-             padding: 3px 5px;
-             border: none;
-              margin-left: 4px;
+           /*  新的增强删除按钮样式  */
+           #replacement-editor .delete-button-enhanced {
+              background-color: rgba(0, 0, 0, 0.5); /* 半透明黑色背景 */
+              color: var(--text-color); /*  浅色文字  */
+             border-radius: 8px; /* 圆角 */
+             padding: 6px 10px; /*  内边距  */
+             border: none; /*  无边框  */
+              margin-left: auto; /*  推到右侧  */
             cursor: pointer;
-            font-size: 0.7em;
+            font-size: 0.8em; /*  文字大小  */
             line-height: 1;
             box-shadow: 0 1px 3px rgba(0,0,0,0.2);
             transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out;
-            }
-            #replacement-editor .delete-button:hover{
-                 background-color: var(--button-delete-hover-bg-color);
-                 transform: scale(1.1);
+            display: flex; /* 弹性布局 */
+            align-items: center; /* 垂直居中 */
+            justify-content: center; /* 水平居中 */
+            width: 24px; /*  固定宽度  */
+            height: 24px; /*  固定高度  */
+           }
+            #replacement-editor .delete-button-enhanced:hover{
+                 background-color: rgba(0, 0, 0, 0.7); /* Hover 时稍微加深背景 */
+                 transform: scale(1.05); /*  Hover 时稍微放大  */
                  box-shadow: 0 3px 5px rgba(0,0,0,0.3);
             }
+
+
             #replacement-editor .scrollable-container {
                overflow-x: hidden;
               overflow-y: auto;
@@ -508,10 +516,13 @@
                 margin: 1px;
                 border-radius: 4px;
             }
-            #replacement-editor .delete-button {
-                padding: 1px 2px;
-                font-size: 0.5em;
-                margin-left: 1px;
+            #replacement-editor .delete-button-enhanced { /* 移动端删除按钮样式 */
+                padding: 4px 6px; /*  更小的 padding  */
+                font-size: 0.6em; /* 更小的字体 */
+                margin-left: auto;
+                border-radius: 6px; /* 更小的圆角 */
+                width: 20px;
+                height: 20px;
             }
             #replacement-editor .scrollable-container {
                 padding-right: 4px;
@@ -542,7 +553,7 @@
     GM_addStyle(styles);
 
 
-    // JavaScript 代码部分 (v3.8 Bugfix - 关键修复：移动 addButton 事件监听器绑定位置)
+    // JavaScript 代码部分 (v3.9 - 修改删除按钮样式)
         // 创建悬浮球容器元素 (新的容器元素)
     let floatingBallContainer = document.createElement('div');
     floatingBallContainer.id = 'floating-ball-container';
@@ -763,7 +774,8 @@
                     // 删除按钮
                     const deleteButton = document.createElement('button');
                     deleteButton.textContent = 'X';
-                    deleteButton.className = 'delete-button';
+                    // deleteButton.className = 'delete-button'; // 移除旧的 class
+                    deleteButton.classList.add('delete-button-enhanced'); // 添加新的 class
                     deleteButton.addEventListener('click', function () {
                         const originalKey = originalInput.value;
                         delete replacementTable[originalKey];
@@ -1026,7 +1038,7 @@
         // 删除按钮
         const deleteButton = document.createElement('button');
         deleteButton.textContent = 'X';
-        deleteButton.className = 'delete-button';
+        deleteButton.classList.add('delete-button-enhanced'); // 添加新的 class  (v3.9)
         deleteButton.addEventListener('click', function () {
             const scrollableContent = replacementEditor.querySelector('.scrollable-content'); // 需要在这里获取 scrollableContent
             scrollableContent.removeChild(replacementRow);
