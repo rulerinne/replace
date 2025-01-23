@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         动态文本替换悬浮球
 // @namespace    http://yournamespace.com
-// @version      4.4
-// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, 修复新增条目 BUG，界面更紧凑, 新增半透明模糊悬浮窗和按钮效果，更美观, 再次修复新增条目 BUG (v3.8 Bugfix), 美化删除按钮样式为半透明黑色按钮, 全局字体颜色更新为浅色白色系 (v3.9 Font Update), 新增右键选中文本快速替换功能 (v4.0 New Feature), 修复新增条目报错，增强动画效果，美化按钮样式 (v4.1 Animation & Button Update), 新增右键替换开关，可禁用默认右键菜单 (v4.2 Toggle Switch Feature), 全面增强弹出窗口和按钮动画效果 (v4.3 Animation Overhaul), 美化滑动条，调整输入框宽度，固定编辑器窗口大小 (v4.4 UI Refinements), **固定分页和编辑按钮在窗口底部 (v4.4b Layout Tweak)**.
+// @version      4.4e
+// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, 修复新增条目 BUG，界面更紧凑, 新增半透明模糊悬浮窗和按钮效果，更美观, 再次修复新增条目 BUG (v3.8 Bugfix), 美化删除按钮样式为半透明黑色按钮, 全局字体颜色更新为浅色白色系 (v3.9 Font Update), 新增右键选中文本快速替换功能 (v4.0 New Feature), 修复新增条目报错，增强动画效果，美化按钮样式 (v4.1 Animation & Button Update), 新增右键替换开关，可禁用默认右键菜单 (v4.2 Toggle Switch Feature), 全面增强弹出窗口和按钮动画效果 (v4.3 Animation Overhaul), 美化滑动条，调整输入框宽度，固定编辑器窗口大小 (v4.4 UI Refinements), 修复匹配不严格问题，实现全词严格匹配 (v4.4c Strict Matching Fix), 添加 null 检查，增强代码健壮性，尝试解决 `nodeType` is null 错误 (v4.4d Null Check), **在文本替换规则编辑界面右下角新增右键替换开关 (v4.4e Editor Switch)**.
 // @author       你的名字
 // @match        *://*/*
 // @grant        GM_addStyle
@@ -218,7 +218,7 @@
             transform: translate(-50%, -50%) scale(1);
             display: flex; /* 确保显示 */
          }
-         #replacement-editor.hide {
+         #replacement-editor.hide { /* v4.3 hide class */
             opacity: 0;
             transform: translate(-50%, -50%) scale(0.95);
             transition: opacity 0.2s ease-in, transform 0.2s ease-in; /* v4.3 Exit 动画时间缩短 */
@@ -301,8 +301,6 @@
                display: flex;
                justify-content: space-around;
                align-items: center;
-               /* margin-top: 12px;  v4.4b 移除 margin-top */
-               /* margin-bottom: 12px; v4.4b 移除 margin-bottom */
                padding-top: 10px; /* v4.4b 添加 padding-top */
                padding-bottom: 10px; /* v4.4b 添加 padding-bottom */
                position: absolute; /* v4.4b  绝对定位 */
@@ -316,7 +314,6 @@
                display: flex;
                justify-content: center;
                gap: 12px;
-               /* margin-top: 15px; v4.4b 移除 margin-top */
                padding-bottom: 15px; /* v4.4b  保留 padding-bottom */
                 position: absolute; /* v4.4b  绝对定位 */
                bottom: 50px; /* v4.4b  定位在分页按钮上方 */
@@ -520,6 +517,55 @@
                  padding-top: 8px; /* v4.4b 移动端调整 padding-top */
                  padding-bottom: 8px; /* v4.4b 移动端调整 padding-bottom */
              }
+
+             #editor-quick-replace-switch-container { /* v4.4e 移动端调整 */
+                bottom: 8px;
+                right: 8px;
+             }
+        }
+
+
+        /* v4.4e 编辑器窗口右下角右键开关样式 */
+        #editor-quick-replace-switch-container {
+            position: absolute;
+            bottom: 15px; /* 距离底部 */
+            right: 20px; /* 距离右侧 */
+            width: 36px;
+            height: 20px;
+            cursor: pointer;
+            user-select: none;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end; /* 按钮默认在右侧 */
+        }
+
+        #editor-quick-replace-switch-button {
+            width: 36px;
+            height: 20px;
+            background-color: var(--quick-replace-toggle-off-color); /* 默认红色 */
+            border-radius: 10px;
+            position: relative;
+            transition: background-color 0.2s ease-in-out;
+        }
+
+        #editor-quick-replace-switch-button:before {
+            content: '';
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 16px;
+            height: 16px;
+            background-color: var(--text-color); /* 滑块颜色 */
+            border-radius: 50%;
+            transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
+        }
+
+        #editor-quick-replace-switch-button.on {
+            background-color: var(--quick-replace-toggle-on-color); /* 开启时绿色 */
+        }
+
+        #editor-quick-replace-switch-button.on:before {
+            transform: translateX(16px); /* 滑块位移到右侧 */
         }
 
 
@@ -528,10 +574,6 @@
 
 
     // JavaScript 代码部分 (v4.4b - 布局调整 - JavaScript 代码基本无改动)
-        // ... (JavaScript 代码与 v4.4 版本一致，无需修改)
-        // ... (保持与之前的 v4.4 版本 JavaScript 代码相同)
-        // ... (此处省略 JavaScript 代码，请复制 v4.4 版本的 JavaScript 代码部分)
-     // JavaScript 代码部分 (v4.3 - 全面增强动画效果 - JavaScript 代码基本无改动，主要为 CSS 增强)
         // 创建悬浮球容器元素 (新的容器元素)
     let floatingBallContainer = document.createElement('div');
     floatingBallContainer.id = 'floating-ball-container';
@@ -592,22 +634,27 @@
                 <span class="enable-slider"></span>
             </label>
         </div>
-        <div id="quick-replace-toggle-container">  <!-- v4.2 右键替换开关容器 -->
-            <div id="quick-replace-toggle-button" class="${isQuickReplaceEnabled ? 'on' : 'off'}"></div> <!-- v4.2 右键替换开关按钮，初始状态 -->
+        <div id="quick-replace-toggle-container">  <!-- v4.2 悬浮球右键替换开关容器 -->
+            <div id="quick-replace-toggle-button" class="${isQuickReplaceEnabled ? 'on' : 'off'}"></div> <!-- v4.2 悬浮球右键替换开关按钮，初始状态 -->
+        </div>
+        <div id="editor-quick-replace-switch-container">  <!-- v4.4e 编辑器窗口右下角右键开关容器 -->
+            <div id="editor-quick-replace-switch-button" class="${isQuickReplaceEnabled ? 'on' : 'off'}"></div> <!-- v4.4e 编辑器窗口右下角右键开关按钮，初始状态 -->
         </div>
     `;
     document.body.appendChild(replacementEditor);
 
     // 获取 "新增条目" 按钮 (在 showReplacementEditor 函数外部获取)
     const addButton = replacementEditor.querySelector('#add-rule');
-    // v4.2 获取右键替换开关按钮
+    // v4.2 获取悬浮球右键替换开关按钮
     const quickReplaceToggleButton = replacementEditor.querySelector('#quick-replace-toggle-button');
+    // v4.4e 获取编辑器窗口右下角右键开关按钮
+    const editorQuickReplaceSwitchButton = replacementEditor.querySelector('#editor-quick-replace-switch-button');
 
 
     // 创建快速替换模态框 (v4.0 新增)
     let quickReplaceModal = document.createElement('div');
     quickReplaceModal.id = 'quick-replace-modal';
-    quickReplaceModal.style.display = 'none'; // 初始化隐藏
+    quickReplaceModal.style.display = 'none'; // 初始隐藏
     quickReplaceModal.innerHTML = `
         <h2>替换选中文本</h2>
         <input type="text" placeholder="替换为..." id="quick-replace-input">
@@ -895,37 +942,39 @@
         }, 1000);
     }
 
-      // 替换文字功能 (修改：判断开关状态) (保持不变)
-   function replaceText(node) {
-        if (!isReplacementEnabled) {
-            restoreSingleNode(node); // 如果关闭，恢复这个节点的原始文本
+    // 修改了 replaceText 函数，添加了单词边界 \b 实现严格匹配
+    function replaceText(node) {
+        if (!isReplacementEnabled || !node) { // **添加 !node 检查，如果 node 为 null 或 undefined，直接返回**
+            restoreSingleNode(node); // (这里 node 可能为 null，restoreSingleNode 也需要做 null 检查)
             return;
         }
 
         if (node.nodeType === Node.TEXT_NODE) {
             let textContent = node.textContent;
-           let originalText = textContent;
-             for (let key in replacementTable) {
-                // 使用不区分大小写的正则表达式和全局匹配
-                  const regex = new RegExp(escapeRegExp(key), 'gi');
+            let originalText = textContent;
+            for (let key in replacementTable) {
+                // 使用不区分大小写的正则表达式和全局匹配，并添加单词边界 \b
+                const regex = new RegExp('\\b' + escapeRegExp(key) + '\\b', 'gi');
                 textContent = textContent.replace(regex, replacementTable[key]);
-             }
+            }
             if(originalText !== textContent) {
                 if (!originalTextMap.has(node)) {
-                    originalTextMap.set(node, originalText); // 存储原始文本
+                    originalTextMap.set(node, originalText);
                 }
                 node.textContent = textContent;
             }
         }
     }
+
+
      // 转义正则表达式特殊字符 (保持不变)
       function escapeRegExp(string) {
           return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
        }
     // 遍历节点并替换文本 (修改：判断开关状态) (保持不变)
     function replaceNode(node) {
-        if (!isReplacementEnabled) {
-            restoreNode(node); // 关闭替换时恢复节点及其子节点的原始文本
+        if (!isReplacementEnabled || !node) { // **添加 !node 检查，如果 node 为 null 或 undefined，直接返回**
+            restoreNode(node); // 关闭替换时恢复节点及其子节点的原始文本 (restoreNode 自身也需要做 null 检查)
             return;
         }
 
@@ -938,16 +987,18 @@
         }
     }
 
-    // 恢复单个文本节点的原始文本
+    // 恢复单个文本节点的原始文本 (修改：添加 null 检查)
     function restoreSingleNode(node) {
+        if (!node) return; // **添加 !node 检查**
         if (node.nodeType === Node.TEXT_NODE && originalTextMap.has(node)) {
             node.textContent = originalTextMap.get(node);
         }
     }
 
-    // 递归恢复节点及其子节点的原始文本
+    // 递归恢复节点及其子节点的原始文本 (修改：添加 null 检查)
     function restoreNode(node) {
-         if (node.nodeType === Node.TEXT_NODE) {
+        if (!node) return; // **添加 !node 检查**
+        if (node.nodeType === Node.TEXT_NODE) {
             restoreSingleNode(node);
         } else if (node.nodeType === Node.ELEMENT_NODE) {
             for (let i = 0; i < node.childNodes.length; i++) {
@@ -959,7 +1010,7 @@
 
     // 恢复页面到原始状态 (修改为恢复所有已替换节点的文本)
     function restoreOriginalPage() {
-        restoreNode(document.body); // 恢复整个 body 的原始文本
+        restoreNode(document.body); // 恢复整个 body 的原始文本 (restoreNode 自身已做 null 检查)
         console.log("文本替换已关闭，已恢复原始文本。");
     }
 
@@ -1119,12 +1170,26 @@
         hideQuickReplaceModal(); // 关闭模态框
     });
 
-    // v4.2 新增：右键替换开关 - 点击事件监听器
+    // v4.2 新增：悬浮球右键替换开关 - 点击事件监听器 (保持不变)
     quickReplaceToggleButton.addEventListener('click', function() {
         isQuickReplaceEnabled = !isQuickReplaceEnabled; // 切换状态
         quickReplaceToggleButton.classList.toggle('on'); // 切换 .on class
         quickReplaceToggleButton.classList.toggle('off'); // 切换 .off class
         GM_setValue('quickReplaceEnabled', isQuickReplaceEnabled); // 保存状态
+        // v4.4e 同步更新编辑器窗口右下角开关状态
+        editorQuickReplaceSwitchButton.classList.toggle('on');
+        editorQuickReplaceSwitchButton.classList.toggle('off');
+    });
+
+    // v4.4e 新增：编辑器窗口右下角右键替换开关 - 点击事件监听器
+    editorQuickReplaceSwitchButton.addEventListener('click', function() {
+        isQuickReplaceEnabled = !isQuickReplaceEnabled; // 切换状态
+        editorQuickReplaceSwitchButton.classList.toggle('on'); // 切换 .on class
+        editorQuickReplaceSwitchButton.classList.toggle('off'); // 切换 .off class
+        GM_setValue('quickReplaceEnabled', isQuickReplaceEnabled); // 保存状态
+        // v4.4e 同步更新悬浮球开关状态 (虽然这里同步更新悬浮球开关似乎不是必须的，但为了保持状态一致性，可以加上)
+        quickReplaceToggleButton.classList.toggle('on');
+        quickReplaceToggleButton.classList.toggle('off');
     });
 
 
