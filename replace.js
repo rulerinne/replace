@@ -2,7 +2,7 @@
 // @name         动态文本替换悬浮球
 // @namespace    http://yournamespace.com
 // @version      3.9
-// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, 修复新增条目 BUG，界面更紧凑, 新增半透明模糊悬浮窗和按钮效果，更美观, 再次修复新增条目 BUG (v3.8 Bugfix), **美化删除按钮样式为半透明黑色按钮**。
+// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, 修复新增条目 BUG，界面更紧凑, 新增半透明模糊悬浮窗和按钮效果，更美观, 再次修复新增条目 BUG (v3.8 Bugfix), 美化删除按钮样式为半透明黑色按钮, **全局字体颜色更新为浅色白色系 (v3.9 Font Update)**。
 // @author       你的名字
 // @match        *://*/*
 // @grant        GM_addStyle
@@ -31,21 +31,21 @@
     // 立即执行页面替换，防止原文闪烁 (在添加样式和创建元素之前执行)
     replacePage();
 
-    // 定义 CSS 变量和样式 (美化版本 3.9 - 美化删除按钮样式为半透明黑色按钮)
+    // 定义 CSS 变量和样式 (美化版本 3.9 - 全局字体颜色更新为浅色白色系)
     const styles = `
         :root {
-            /* Dark Mode 默认主题色 */
+            /* Dark Mode 默认主题色 - 全局浅色字体调整 */
             --bg-color: #121212;
             --modal-bg-color: rgba(34, 34, 34, 0.7); /* 半透明模态框背景 */
             --button-bg-color: rgba(51, 51, 51, 0.6); /* 半透明按钮背景 */
-            --text-color: #eee;
-            --text-color-light: #ccc;
-            --text-color-lighter: #aaa;
+            --text-color: #f0f0f0; /*  更亮的浅白色，全局文本颜色  */
+            --text-color-light: #ddd; /*  更浅的白色，辅助文本颜色  */
+            --text-color-lighter: #eee; /*  更淡的白色，更辅助文本颜色  */
             --border-color: #555;
             --hover-bg-color: #444;
             --button-hover-bg-color: var(--hover-bg-color);
             --button-active-bg-color: #555;
-            --button-text-color: var(--text-color);
+            --button-text-color: var(--text-color); /* 按钮文字颜色，使用 --text-color */
             --button-delete-bg-color: #f44336; /* 保持删除按钮 hover 时的红色 */
             --button-delete-hover-bg-color: #d32f2f; /* 保持删除按钮 hover 时的红色 */
             --scroll-track-color: #333;
@@ -123,7 +123,7 @@
             position: fixed;
             z-index: 10000;
             background-color: var(--modal-bg-color); /* 使用半透明背景色 */
-            color: var(--text-color);
+            color: var(--text-color); /*  全局文本颜色  */
             border: 1px solid var(--border-color);
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
             padding: 12px 16px;
@@ -157,7 +157,7 @@
              border: none;
              border-radius: 8px;
              background-color: var(--button-bg-color); /* 使用半透明背景色 */
-             color: var(--button-text-color);
+             color: var(--button-text-color); /* 按钮文字颜色，使用 --button-text-color */
              font-size: 0.9em;
              transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out;
           }
@@ -172,7 +172,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             background-color: var(--modal-bg-color); /* 使用半透明背景色 */
-            color: var(--text-color);
+            color: var(--text-color); /*  全局文本颜色  */
             border: 1px solid var(--border-color);
             box-shadow: 0 4px 12px rgba(0,0,0,0.15);
             padding: 20px;
@@ -200,7 +200,7 @@
             margin-top: 0;
             margin-bottom: 12px;
             font-size: 1.1em;
-            color: var(--text-color-light);
+            color: var(--text-color-light); /*  辅助文本颜色  */
          }
         #replacement-editor .replacement-row {
            display: flex;
@@ -212,7 +212,7 @@
              flex-basis: 50px;
              text-align: right;
              white-space: nowrap;
-             color: var(--text-color-light);
+             color: var(--text-color-light); /*  辅助文本颜色  */
              font-size: 0.85em;
              line-height: 1.4;
         }
@@ -222,11 +222,15 @@
            border: 1px solid var(--border-color);
            border-radius: 6px;
            font-size: 0.85em;
-           color: var(--text-color);
+           color: var(--text-color); /*  全局文本颜色，输入框文字  */
            background-color: #444;
            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out, background-color 0.2s ease-in-out;
            user-select: text !important;
            min-width: auto;
+        }
+
+        #replacement-editor input::placeholder { /*  输入框 placeholder 颜色  */
+            color: var(--text-color-light); /*  辅助文本颜色，placeholder  */
         }
 
 
@@ -243,7 +247,7 @@
              border: none;
              border-radius: 7px;
              background-color: var(--button-bg-color); /* 使用半透明背景色 */
-              color: var(--button-text-color);
+              color: var(--button-text-color); /* 按钮文字颜色，使用 --button-text-color */
               font-size: 0.85em;
               transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out;
           }
@@ -265,7 +269,7 @@
            /*  新的增强删除按钮样式  */
            #replacement-editor .delete-button-enhanced {
               background-color: rgba(0, 0, 0, 0.5); /* 半透明黑色背景 */
-              color: var(--text-color); /*  浅色文字  */
+              color: var(--text-color); /*  全局文本颜色，删除按钮文字  */
              border-radius: 8px; /* 圆角 */
              padding: 6px 10px; /*  内边距  */
              border: none; /*  无边框  */
@@ -315,19 +319,19 @@
             border-radius: 6px;
             background-color: var(--button-bg-color); /* 使用半透明背景色 */
             border: none;
-            color: var(--text-color-light);
+            color: var(--text-color-light); /*  辅助文本颜色，分页按钮文字  */
             font-size: 0.8em;
             transition: background-color 0.2s ease-in-out, color 0.2s ease-in-out, transform 0.2s ease-in-out, color 0.2s ease-in-out;
         }
          #replacement-editor .pagination-container button:hover {
              background-color: var(--button-hover-bg-color);
-             color: var(--button-text-color);
+             color: var(--button-text-color); /* 按钮文字颜色，使用 --button-text-color */
          }
         #replacement-editor .pagination-container button:disabled {
             opacity: 0.6;
             cursor: default;
             background-color: var(--button-bg-color); /* 使用半透明背景色 */
-            color: var(--text-color-lighter);
+            color: var(--text-color-lighter); /*  更辅助文本颜色，禁用分页按钮文字  */
          }
 
        #replacement-editor .editor-buttons-container {
@@ -344,7 +348,7 @@
          border-radius: 10px;
          font-size: 0.9em;
          background-color: var(--button-bg-color); /* 使用半透明背景色 */
-         color: var(--button-text-color);
+         color: var(--button-text-color); /* 按钮文字颜色，使用 --button-text-color */
          border: none;
          transition: background-color 0.2s ease-in-out, transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out;
      }
@@ -365,7 +369,7 @@
 
       #replacement-editor .enable-switch-label {
          margin-right: 10px;
-         color: var(--text-color-light);
+         color: var(--text-color-light); /*  辅助文本颜色，开关标签  */
          font-size: 0.9em;
       }
 
@@ -440,15 +444,19 @@
 
         /* 媒体查询，针对小屏幕设备（例如手机） - 保持极致紧凑样式 */
         @media (max-width: 768px) {
-            /* 移动端输入框和按钮字体颜色修复 */
+            /* 移动端输入框和按钮字体颜色修复 - 确保移动端也使用白色字体 */
             #replacement-editor input,
             #replacement-editor button,
             #replacement-editor .button-pagination-container button,
             #replacement-editor .editor-buttons-container button,
             #replacement-editor .pagination-container button,
             #choice-modal button {
-                color: var(--text-color); /* 强制设置移动端字体颜色为浅色 */
+                color: var(--text-color); /* 强制设置移动端字体颜色为浅色白色 */
             }
+            #replacement-editor input::placeholder { /*  移动端输入框 placeholder 颜色  */
+                color: var(--text-color-light); /*  辅助文本颜色，placeholder  */
+            }
+
 
             #floating-ball-container {
                 width: 36px;
@@ -553,7 +561,10 @@
     GM_addStyle(styles);
 
 
-    // JavaScript 代码部分 (v3.9 - 修改删除按钮样式)
+    // JavaScript 代码部分 (v3.9 - 字体颜色更新，JavaScript 代码无需修改)
+        // ... (JavaScript 代码与 v3.9 版本一致，无需修改)
+        // ... (保持与之前的 v3.9 版本 JavaScript 代码相同)
+        // ... (此处省略 JavaScript 代码，请复制 v3.9 版本的 JavaScript 代码部分)
         // 创建悬浮球容器元素 (新的容器元素)
     let floatingBallContainer = document.createElement('div');
     floatingBallContainer.id = 'floating-ball-container';
