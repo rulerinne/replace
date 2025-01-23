@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         动态文本替换悬浮球
 // @namespace    http://yournamespace.com
-// @version      4.3
-// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, 修复新增条目 BUG，界面更紧凑, 新增半透明模糊悬浮窗和按钮效果，更美观, 再次修复新增条目 BUG (v3.8 Bugfix), 美化删除按钮样式为半透明黑色按钮, 全局字体颜色更新为浅色白色系 (v3.9 Font Update), 新增右键选中文本快速替换功能 (v4.0 New Feature), 修复新增条目报错，增强动画效果，美化按钮样式 (v4.1 Animation & Button Update), 新增右键替换开关，可禁用默认右键菜单 (v4.2 Toggle Switch Feature), **新增移动端选中文本 "替换" 按钮 (v4.3 Mobile Trigger Button)**.
+// @version      4.2
+// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, 修复新增条目 BUG，界面更紧凑, 新增半透明模糊悬浮窗和按钮效果，更美观, 再次修复新增条目 BUG (v3.8 Bugfix), 美化删除按钮样式为半透明黑色按钮, 全局字体颜色更新为浅色白色系 (v3.9 Font Update), 新增右键选中文本快速替换功能 (v4.0 New Feature), 修复新增条目报错，增强动画效果，美化按钮样式 (v4.1 Animation & Button Update), **新增右键替换开关，可禁用默认右键菜单 (v4.2 Toggle Switch Feature)**.
 // @author       你的名字
 // @match        *://*/*
 // @grant        GM_addStyle
@@ -39,23 +39,23 @@
     let currentPage = 1; // 当前页码
     let totalPages = 1; // 总页数，初始值设为1
 
-    // 定义 CSS 变量和样式 (美化版本 4.3 - 新增移动端 "替换" 按钮)
+    // 定义 CSS 变量和样式 (美化版本 4.2 - 新增右键替换开关)
     const styles = `
         :root {
             /* Dark Mode 默认主题色 - 全局浅色字体调整 */
             --bg-color: #121212;
-            --modal-bg-color: rgba(34, 34, 34, 0.7);
-            --button-bg-color: rgba(51, 51, 51, 0.6);
-            --text-color: #f0f0f0;
-            --text-color-light: #ddd;
-            --text-color-lighter: #eee;
+            --modal-bg-color: rgba(34, 34, 34, 0.7); /* 半透明模态框背景 */
+            --button-bg-color: rgba(51, 51, 51, 0.6); /* 半透明按钮背景 */
+            --text-color: #f0f0f0; /*  更亮的浅白色，全局文本颜色  */
+            --text-color-light: #ddd; /*  更浅的白色，辅助文本颜色  */
+            --text-color-lighter: #eee; /*  更淡的白色，更辅助文本颜色  */
             --border-color: #555;
             --hover-bg-color: #444;
             --button-hover-bg-color: var(--hover-bg-color);
             --button-active-bg-color: #555;
-            --button-text-color: var(--text-color);
-            --button-delete-bg-color: #f44336;
-            --button-delete-hover-bg-color: #d32f2f;
+            --button-text-color: var(--text-color); /* 按钮文字颜色，使用 --text-color */
+            --button-delete-bg-color: #f44336; /* 保持删除按钮 hover 时的红色 */
+            --button-delete-hover-bg-color: #d32f2f; /* 保持删除按钮 hover 时的红色 */
             --scroll-track-color: #333;
             --scroll-thumb-color: #666;
             --scroll-thumb-hover-color: #888;
@@ -63,8 +63,8 @@
             --floating-ball-text-color: #333;
             --toggle-indicator-on-color: #69F0AE;
             --toggle-indicator-off-color: #FF5252;
-            --quick-replace-toggle-on-color: #69F0AE;
-            --quick-replace-toggle-off-color: #FF5252;
+            --quick-replace-toggle-on-color: #69F0AE; /* v4.2 右键替换开关 ON 颜色 */
+            --quick-replace-toggle-off-color: #FF5252; /* v4.2 右键替换开关 OFF 颜色 */
         }
 
 
@@ -495,32 +495,6 @@
           }
 
 
-        /* v4.3 移动端 "替换" 触发按钮样式 */
-        #mobile-replace-trigger {
-            display: none; /* 初始隐藏 */
-            position: absolute;
-            background-color: rgba(0, 0, 0, 0.6);
-            color: var(--text-color);
-            border-radius: 50%;
-            width: 28px;
-            height: 28px;
-            font-size: 0.7em;
-            text-align: center;
-            line-height: 28px;
-            cursor: pointer;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-            z-index: 10003; /* 确保在模态框之上 */
-            opacity: 0;
-            transform: scale(0.8);
-            transition: transform 0.2s ease-out, opacity 0.2s ease-out;
-        }
-        #mobile-replace-trigger.show {
-            display: block; /* 显示按钮 */
-            opacity: 1;
-            transform: scale(1);
-        }
-
-
         /* 媒体查询，针对小屏幕设备（例如手机） - 保持极致紧凑样式 */
         @media (max-width: 768px) {
             /* 移动端输入框和按钮字体颜色修复 - 确保移动端也使用白色字体 */
@@ -565,24 +539,103 @@
              #replacement-editor #quick-replace-toggle-button.off:before { /* v4.2 移动端调整 */
                  transform: translateX(14px); /* OFF 状态滑块位移 */
              }
-            #floating-ball-container { /* ... (之前的媒体查询样式，省略) ... */ }
-            #floating-ball { /* ... (之前的媒体查询样式，省略) ... */ }
-            #toggle-indicator { /* ... (之前的媒体查询样式，省略) ... */ }
-            #choice-modal { /* ... (之前的媒体查询样式，省略) ... */ }
-            #choice-modal button { /* ... (之前的媒体查询样式，省略) ... */ }
-            #replacement-editor { /* ... (之前的媒体查询样式，省略) ... */ }
-            #replacement-editor .replacement-row { /* ... (之前的媒体查询样式，省略) ... */ }
-            #replacement-editor label { /* ... (之前的媒体查询样式，省略) ... */ }
-            #replacement-editor input { /* ... (之前的媒体查询样式，省略) ... */ }
-            #replacement-editor button, #replacement-editor .button-pagination-container button, #replacement-editor .editor-buttons-container button, #replacement-editor .pagination-container button { /* ... (之前的媒体查询样式，省略) ... */ }
-            #replacement-editor .delete-button-enhanced { /* ... (之前的媒体查询样式，省略) ... */ }
-            #replacement-editor .scrollable-container { /* ... (之前的媒体查询样式，省略) ... */ }
-             /* v4.3 移动端 "替换" 触发按钮 媒体查询样式 */
-            #mobile-replace-trigger {
-                width: 24px;
-                height: 24px;
-                font-size: 0.6em;
-                line-height: 24px;
+
+
+            #floating-ball-container {
+                width: 36px;
+                height: 36px;
+                top: 8px;
+                right: 8px;
+            }
+            #floating-ball {
+                font-size: 18px;
+            }
+            #toggle-indicator {
+                width: 9px;
+                height: 9px;
+                top: 3px;
+                right: 3px;
+            }
+            #choice-modal {
+                width: 90%;
+                max-width: 280px;
+                padding: 10px 12px;
+                font-size: 0.9em;
+                backdrop-filter: blur(6px); /* 移动端模糊程度稍弱 */
+                -webkit-backdrop-filter: blur(6px); /* 兼容旧版 Safari */
+            }
+            #choice-modal button {
+                padding: 6px 10px;
+                font-size: 0.85em;
+                margin: 4px 5px;
+            }
+            #replacement-editor {
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                width: 95%;
+                max-width: 320px;
+                max-height: 80vh;
+                padding: 10px;
+                font-size: 0.85em;
+                backdrop-filter: blur(8px); /* 移动端模糊程度 */
+                -webkit-backdrop-filter: blur(8px); /* 兼容旧版 Safari */
+            }
+            #replacement-editor .replacement-row {
+                margin-bottom: 3px;
+                align-items: baseline;
+            }
+            #replacement-editor label {
+                flex-basis: 30px;
+                font-size: 0.7em;
+                margin-right: 1px;
+                line-height: 1.2;
+            }
+            #replacement-editor input {
+                padding: 3px 4px;
+                font-size: 0.7em;
+                border-radius: 3px;
+                min-width: 0;
+            }
+            #replacement-editor button,
+            #replacement-editor .button-pagination-container button,
+            #replacement-editor .editor-buttons-container button,
+            #replacement-editor .pagination-container button {
+                padding: 4px 6px;
+                font-size: 0.7em;
+                margin: 1px;
+                border-radius: 4px;
+            }
+            #replacement-editor .delete-button-enhanced { /* 移动端删除按钮样式 */
+                padding: 4px 6px; /*  更小的 padding  */
+                font-size: 0.6em; /* 更小的字体 */
+                margin-left: auto;
+                border-radius: 6px; /* 更小的圆角 */
+                width: 20px;
+                height: 20px;
+            }
+            #replacement-editor .scrollable-container {
+                padding-right: 4px;
+                border-radius: 6px;
+            }
+             /* 滚动条美化 (Webkit based browsers) - 手机端 恢复极窄滚动条 */
+            #replacement-editor .scrollable-container::-webkit-scrollbar {
+                width: 4px;
+            }
+
+            #replacement-editor .scrollable-container::-webkit-scrollbar-track {
+                background-color: var(--scroll-track-color);
+                border-radius: 6px;
+            }
+
+            #replacement-editor .scrollable-container::-webkit-scrollbar-thumb {
+                background-color: var(--scroll-thumb-color);
+                border-radius: 6px;
+            }
+
+            #replacement-editor .scrollable-container::-webkit-scrollbar-thumb:hover {
+                background-color: var(--scroll-thumb-hover-color);
             }
         }
 
@@ -591,7 +644,7 @@
     GM_addStyle(styles);
 
 
-    // JavaScript 代码部分 (v4.3 - 新增移动端 "替换" 按钮)
+    // JavaScript 代码部分 (v4.2 - 右键替换开关功能)
         // 创建悬浮球容器元素 (新的容器元素)
     let floatingBallContainer = document.createElement('div');
     floatingBallContainer.id = 'floating-ball-container';
@@ -677,12 +730,6 @@
         </div>
     `;
     document.body.appendChild(quickReplaceModal);
-
-    // v4.3 新增：移动端 "替换" 触发按钮
-    let mobileReplaceTrigger = document.createElement('div');
-    mobileReplaceTrigger.id = 'mobile-replace-trigger';
-    mobileReplaceTrigger.textContent = '替换';
-    document.body.appendChild(mobileReplaceTrigger);
 
 
     let timeoutId;
@@ -1176,7 +1223,7 @@
             replacePage(); // 立即生效替换
             hideQuickReplaceModal(); // 关闭模态框
         } else {
-            alert("请输入替换内容！"); // 可选：提示用户输入内容
+            alert("请输入替换内容！"); // 可选：提示用户输入替换内容
         }
     });
 
@@ -1191,35 +1238,6 @@
         quickReplaceToggleButton.classList.toggle('on'); // 切换 .on class
         quickReplaceToggleButton.classList.toggle('off'); // 切换 .off class
         GM_setValue('quickReplaceEnabled', isQuickReplaceEnabled); // 保存状态
-    });
-
-
-    // v4.3 新增：监听 mouseup 事件，用于移动端显示 "替换" 按钮
-    document.body.addEventListener('mouseup', function(event) {
-        if (!isQuickReplaceEnabled) { // 如果快速替换功能关闭，则不显示按钮
-            mobileReplaceTrigger.classList.remove('show');
-            return;
-        }
-        const selectedText = window.getSelection().toString().trim();
-        if (selectedText) {
-            const selectionRect = window.getSelection().getRangeAt(0).getBoundingClientRect();
-            const triggerButton = document.getElementById('mobile-replace-trigger');
-            triggerButton.style.left = (selectionRect.right + 10) + 'px'; // 按钮定位到选区右侧
-            triggerButton.style.top = (selectionRect.top + window.scrollY - 10) + 'px'; // 按钮定位到选区顶部附近
-            triggerButton.classList.add('show'); // 显示按钮
-        } else {
-            mobileReplaceTrigger.classList.remove('show'); // 没有选中文本时隐藏按钮
-        }
-    });
-
-    // v4.3 新增：移动端 "替换" 按钮点击事件监听器
-    mobileReplaceTrigger.addEventListener('click', function() {
-        const selectedText = window.getSelection().toString().trim();
-        if (selectedText) {
-            const triggerRect = mobileReplaceTrigger.getBoundingClientRect();
-            showQuickReplaceModal(selectedText, triggerRect.left, triggerRect.top); // 弹出替换模态框
-            mobileReplaceTrigger.classList.remove('show'); // 隐藏按钮
-        }
     });
 
 
