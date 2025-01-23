@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         动态文本替换悬浮球
 // @namespace    http://yournamespace.com
-// @version      2.7
-// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量。
+// @version      2.8
+// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, **修复手机端悬浮窗超出屏幕边界BUG**。
 // @author       你的名字
 // @match        *://*/*
 // @grant        GM_addStyle
@@ -27,7 +27,7 @@
     const originalTextMap = new WeakMap();
     const replacedNodes = new WeakSet(); // 保存已替换的节点，防止重复替换
 
-     // 添加 CSS 样式 (美化版本 2.7 - 手机端紧凑横向规则，限制显示数量)
+     // 添加 CSS 样式 (美化版本 2.8 - 修复手机端超出屏幕边界BUG)
     GM_addStyle(`
         #floating-ball-container {
             position: fixed;
@@ -406,49 +406,56 @@
                 margin: 5px 6px;
             }
             #replacement-editor {
-                width: 95%;
-                max-width: 400px;
-                padding: 15px; /* 稍微减小 编辑器 padding */
+                position: fixed; /* 确保 fixed 定位 */
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%); /* 居中定位 */
+                width: 90%; /* 宽度占据屏幕 90% */
+                max-width: 350px; /* **限制最大宽度，防止过宽** */
+                max-height: 75vh; /* **限制最大高度，防止过高，并留出一些空间** */
+                padding: 15px;
                 font-size: 0.9em;
+                overflow-y: auto; /* 允许垂直滚动 */
+                box-sizing: border-box; /* 包含 padding 和 border 在 width/height 内 */
             }
             #replacement-editor .replacement-row {
-                flex-direction: row; /* 改回横向排列 */
-                align-items: center;   /* 垂直居中对齐 */
-                margin-bottom: 6px; /* 进一步减小行间距 */
+                flex-direction: row;
+                align-items: center;
+                margin-bottom: 6px;
             }
             #replacement-editor label {
-                text-align: right;      /* label 恢复右对齐 */
-                margin-bottom: 0;    /* 移除 label 下边距 */
-                flex-basis: 50px;      /* 进一步缩小 label 宽度 */
-                font-size: 0.85em; /* 进一步缩小 label 字体 */
-                margin-right: 3px; /* 进一步减小 label 右边距 */
+                text-align: right;
+                margin-bottom: 0;
+                flex-basis: 50px;
+                font-size: 0.85em;
+                margin-right: 3px;
             }
             #replacement-editor input {
-                padding: 5px;        /* 进一步减小 input 内边距 */
-                font-size: 0.85em;       /* 进一步缩小 input 字体 */
+                padding: 5px;
+                font-size: 0.85em;
                 margin-bottom: 0;
             }
             #replacement-editor button,
             #replacement-editor .button-pagination-container button,
             #replacement-editor .editor-buttons-container button,
             #replacement-editor .pagination-container button {
-                padding: 6px 10px;    /* 进一步减小 编辑器按钮内边距 */
-                font-size: 0.85em;      /* 进一步缩小 编辑器按钮字体 */
+                padding: 6px 10px;
+                font-size: 0.85em;
                 margin: 3px;
             }
             #replacement-editor .delete-button {
-                padding: 2px 5px;    /* 进一步减小 删除按钮内边距 */
+                padding: 2px 5px;
                 font-size: 0.7em;
                 margin-left: 3px;
             }
             #replacement-editor .scrollable-container {
-                max-height: 250px;   /* 调整滚动区域高度，容纳约 5 条规则 */
+                max-height: none; /* 移除 scrollable-container 的高度限制，让编辑器自身 max-height 生效 */
             }
         }
 
 
     `);
-    // ... (JavaScript 代码部分保持不变，与 v2.6 版本一致)
+    // ... (JavaScript 代码部分保持不变，与 v2.7 版本一致)
         // 创建悬浮球容器元素 (新的容器元素)
     let floatingBallContainer = document.createElement('div');
     floatingBallContainer.id = 'floating-ball-container';
