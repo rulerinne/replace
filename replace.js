@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         动态文本替换悬浮球
 // @namespace    http://yournamespace.com
-// @version      3.2
-// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, **解决刷新页面时原文闪烁问题**。
+// @version      3.3
+// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, **优化悬浮球点击行为，再次点击可收回菜单**。
 // @author       你的名字
 // @match        *://*/*
 // @grant        GM_addStyle
@@ -32,7 +32,7 @@
     replacePage();
 
 
-     // 添加 CSS 样式 (美化版本 3.1 - 分辨率自适应样式，电脑端更清晰)
+     // 添加 CSS 样式 (美化版本 3.3 - 优化悬浮球点击行为)
     GM_addStyle(`
         #floating-ball-container {
             position: fixed;
@@ -478,7 +478,7 @@
 
 
     `);
-    // ... (JavaScript 代码部分保持不变，与 v3.1 版本一致)
+    // ... (JavaScript 代码部分保持不变，与 v3.2 版本一致)
         // 创建悬浮球容器元素 (新的容器元素)
     let floatingBallContainer = document.createElement('div');
     floatingBallContainer.id = 'floating-ball-container';
@@ -542,44 +542,56 @@
             floatingBall.classList.remove('transparent');
             floatingBall.classList.add('rotating');
 
-            // 设置选择框位置前先显示，以便获取尺寸
-            choiceModal.style.display = 'block';
-            choiceModal.style.visibility = 'hidden'; // 隐藏，防止闪烁
+            // 判断 choiceModal 当前的显示状态
+            if (choiceModal.classList.contains('show')) {
+                // 如果菜单显示，则隐藏菜单
+                choiceModal.classList.remove('show');
+                choiceModal.classList.add('hide'); // 添加隐藏动画 class
+                setTimeout(() => {
+                    choiceModal.style.display = 'none';
+                    choiceModal.classList.remove('hide'); // 移除隐藏动画 class，为下次显示做准备
+                }, 300); // 等待动画结束后隐藏
+            } else {
+                // 如果菜单隐藏，则显示菜单 (保持原有逻辑)
+                // 设置选择框位置前先显示，以便获取尺寸
+                choiceModal.style.display = 'block';
+                choiceModal.style.visibility = 'hidden'; // 隐藏，防止闪烁
 
-            let ballRect = floatingBallContainer.getBoundingClientRect(); // 使用容器的位置
-            let modalRect = choiceModal.getBoundingClientRect();
-            let modalWidth = modalRect.width;
-            let modalHeight = modalRect.height;
-            let viewportWidth = window.innerWidth;
-            let viewportHeight = window.innerHeight;
-            let margin = 20; // 距离屏幕边缘的距离
+                let ballRect = floatingBallContainer.getBoundingClientRect(); // 使用容器的位置
+                let modalRect = choiceModal.getBoundingClientRect();
+                let modalWidth = modalRect.width;
+                let modalHeight = modalRect.height;
+                let viewportWidth = window.innerWidth;
+                let viewportHeight = window.innerHeight;
+                let margin = 20; // 距离屏幕边缘的距离
 
-            let modalLeft = ballRect.left + ballRect.width / 2 - modalWidth / 2; // 默认居中对齐
-            let modalTop = ballRect.bottom + 10;
+                let modalLeft = ballRect.left + ballRect.width / 2 - modalWidth / 2; // 默认居中对齐
+                let modalTop = ballRect.bottom + 10;
 
-            // 水平边界检测和调整
-            if (modalLeft < margin) {
-                modalLeft = margin;
-            } else if (modalLeft + modalWidth > viewportWidth - margin) {
-                modalLeft = viewportWidth - modalWidth - margin;
-                modalLeft = Math.max(margin, viewportWidth - modalWidth - margin); // 确保 modalLeft 不小于 margin
-            }
-
-
-             // 垂直边界检测和调整
-            if (modalTop + modalHeight > viewportHeight - margin) {
-                modalTop = ballRect.top - modalHeight - 10; // 显示在悬浮球上方
-                if (modalTop < margin) { // 如果上方空间也不够，则贴近顶部
-                    modalTop = margin;
+                // 水平边界检测和调整
+                if (modalLeft < margin) {
+                    modalLeft = margin;
+                } else if (modalLeft + modalWidth > viewportWidth - margin) {
+                    modalLeft = viewportWidth - modalWidth - margin;
+                    modalLeft = Math.max(margin, viewportWidth - modalWidth - margin); // 确保 modalLeft 不小于 margin
                 }
+
+
+                 // 垂直边界检测和调整
+                if (modalTop + modalHeight > viewportHeight - margin) {
+                    modalTop = ballRect.top - modalHeight - 10; // 显示在悬浮球上方
+                    if (modalTop < margin) { // 如果上方空间也不够，则贴近顶部
+                        modalTop = margin;
+                    }
+                }
+
+                choiceModal.style.left = modalLeft + 'px';
+                choiceModal.style.top = modalTop + 'px';
+                choiceModal.style.visibility = 'visible'; // 显示选择框
+
+                 // 动画展开选择框
+                choiceModal.classList.add('show');
             }
-
-            choiceModal.style.left = modalLeft + 'px';
-            choiceModal.style.top = modalTop + 'px';
-            choiceModal.style.visibility = 'visible'; // 显示选择框
-
-             // 动画展开选择框
-            choiceModal.classList.add('show');
 
 
             setTimeout(() => {
