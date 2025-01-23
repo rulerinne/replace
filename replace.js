@@ -1,14 +1,14 @@
 // ==UserScript==
 // @name         动态文本替换悬浮球
 // @namespace    http://yournamespace.com
-// @version      3.1
-// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, **新增分辨率自适应样式，电脑端显示更清晰**。
+// @version      3.2
+// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, **解决刷新页面时原文闪烁问题**。
 // @author       你的名字
 // @match        *://*/*
 // @grant        GM_addStyle
 // @grant        GM_setValue
 // @grant        GM_getValue
-// @run-at       document-end
+// @run-at       document-start
 // @updateURL    https://raw.githubusercontent.com/rulerinne/replace/refs/heads/main/replace.js
 // ==/UserScript==
 
@@ -27,6 +27,10 @@
     // 用于存储原始文本的 WeakMap，key 是 TextNode，value 是原始文本
     const originalTextMap = new WeakMap();
     const replacedNodes = new WeakSet(); // 保存已替换的节点，防止重复替换
+
+    // 立即执行页面替换，防止原文闪烁 (在添加样式和创建元素之前执行)
+    replacePage();
+
 
      // 添加 CSS 样式 (美化版本 3.1 - 分辨率自适应样式，电脑端更清晰)
     GM_addStyle(`
@@ -474,7 +478,7 @@
 
 
     `);
-    // ... (JavaScript 代码部分保持不变，与 v3.0 版本一致)
+    // ... (JavaScript 代码部分保持不变，与 v3.1 版本一致)
         // 创建悬浮球容器元素 (新的容器元素)
     let floatingBallContainer = document.createElement('div');
     floatingBallContainer.id = 'floating-ball-container';
@@ -913,7 +917,6 @@
         }
     }
 
-     replacePage();// 启动替换
 
      // 使用 Set 保存已替换的节点，防止重复替换 (保持不变)
 
