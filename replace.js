@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         动态文本替换悬浮球
 // @namespace    http://yournamespace.com
-// @version      4.4h
-// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, 修复新增条目 BUG，界面更紧凑, 新增半透明模糊悬浮窗和按钮效果，更美观, 再次修复新增条目 BUG (v3.8 Bugfix), 美化删除按钮样式为半透明黑色按钮, 全局字体颜色更新为浅色白色系 (v3.9 Font Update), 新增右键选中文本快速替换功能 (v4.0 New Feature), 修复新增条目报错，增强动画效果，美化按钮样式 (v4.1 Animation & Button Update), 新增右键替换开关，可禁用默认右键菜单 (v4.2 Toggle Switch Feature), 全面增强弹出窗口和按钮动画效果 (v4.3 Animation Overhaul), 美化滑动条，调整输入框宽度，固定编辑器窗口大小 (v4.4 UI Refinements), 修复匹配不严格问题，实现全词严格匹配 (v4.4c Strict Matching Fix), 添加 null 检查，增强代码健壮性，尝试解决 `nodeType` is null 错误 (v4.4d Null Check), 在文本替换规则编辑界面右下角新增右键替换开关 (v4.4e Editor Switch), 全面适配手机端网页浏览，优化悬浮窗显示 (v4.4f Mobile Adaption), **手机端规则条目极致紧凑横向排版优化 (v4.4h Mobile Layout Refine)**.
+// @version      4.4i
+// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, 修复新增条目 BUG，界面更紧凑, 新增半透明模糊悬浮窗和按钮效果，更美观, 再次修复新增条目 BUG (v3.8 Bugfix), 美化删除按钮样式为半透明黑色按钮, 全局字体颜色更新为浅色白色系 (v3.9 Font Update), 新增右键选中文本快速替换功能 (v4.0 New Feature), 修复新增条目报错，增强动画效果，美化按钮样式 (v4.1 Animation & Button Update), 新增右键替换开关，可禁用默认右键菜单 (v4.2 Toggle Switch Feature), 全面增强弹出窗口和按钮动画效果 (v4.3 Animation Overhaul), 美化滑动条，调整输入框宽度，固定编辑器窗口大小 (v4.4 UI Refinements), 修复匹配不严格问题，实现全词严格匹配 (v4.4c Strict Matching Fix), 添加 null 检查，增强代码健壮性，尝试解决 `nodeType` is null 错误 (v4.4d Null Check), 在文本替换规则编辑界面右下角新增右键替换开关 (v4.4e Editor Switch), 全面适配手机端网页浏览，优化悬浮窗显示 (v4.4f Mobile Adaption), 手机端规则条目极致紧凑横向排版优化 (v4.4g Mobile Layout Refine), **手机端极致紧凑，电脑端正常显示，区分平台适配 (v4.4i Platform Adaption)**.
 // @author       你的名字
 // @match        *://*/*
 // @grant        GM_addStyle
@@ -71,6 +71,12 @@
             --modal-transition-easing: cubic-bezier(0.175, 0.885, 0.32, 1.275); /*  更活泼的缓动函数 */
             --button-transition-duration: 0.2s;
             --button-transition-easing: cubic-bezier(0.175, 0.885, 0.32, 1.15); /* 按钮缓动函数略有不同 */
+
+            --base-font-size: 0.9em; /* v4.4i 电脑端基础字体大小 */
+        }
+
+        body {
+            font-size: var(--base-font-size); /* v4.4i 全局基础字体大小应用 */
         }
 
 
@@ -232,34 +238,31 @@
          }
         #replacement-editor .replacement-row {
            display: flex;
-           margin-bottom: 6px; /* v4.4h 恢复 margin-bottom: 6px */
-            align-items: baseline; /* v4.4h 恢复 align-items: baseline */
-            flex-direction: row; /* v4.4h 恢复 flex-direction: row */
+           margin-bottom: 6px;
+            align-items: baseline;
+            flex-direction: row; /* v4.4h 恢复 flex-direction: row (电脑端默认横向排版) */
         }
         #replacement-editor label {
-             margin-right: 4px; /* v4.4h 恢复 margin-right: 4px */
-             flex-basis: 40px; /* v4.4h  极小 flex-basis */
-             text-align: right; /* v4.4h 恢复 text-align: right */
-             white-space: nowrap; /* v4.4h 恢复 white-space: nowrap */
+             margin-right: 4px; /* v4.4h 恢复 margin-right: 4px (电脑端默认 label 样式) */
+             flex-basis: 50px; /* v4.4h 恢复 flex-basis: 50px (电脑端默认 label 宽度) */
+             text-align: right; /* v4.4h 恢复 text-align: right (电脑端默认 label 右对齐) */
+             white-space: nowrap; /* v4.4h 恢复 white-space: nowrap (电脑端默认 label 不换行) */
              color: var(--text-color-light); /*  辅助文本颜色  */
-             font-size: 0.75em; /* v4.4h 极小字体 */
-             line-height: 1.2; /* v4.4h 行高调整 */
-             padding: 0; /* v4.4h 移除 padding */
-             margin: 0; /* v4.4h 移除 margin */
+             font-size: 0.85em; /* v4.4h 恢复 font-size: 0.85em (电脑端默认 label 字体大小) */
+             line-height: 1.4; /* v4.4h 恢复 line-height: 1.4 */
         }
         #replacement-editor input {
            flex-grow: 0; /* v4.4  取消 flex-grow */
-           width: 120px; /* v4.4h 极小宽度 */
-           padding: 4px; /* v4.4h 极小 padding */
+           width: 180px; /* v4.4  固定宽度 */
+           padding: 6px; /* v4.4h 恢复 padding: 6px (电脑端默认 input padding) */
            border: 1px solid var(--border-color);
-           border-radius: 4px; /* v4.4h 更小圆角 */
-           font-size: 0.75em; /* v4.4h 极小字体 */
+           border-radius: 6px; /* v4.4h 恢复 border-radius: 6px */
+           font-size: 0.85em; /* v4.4h 恢复 font-size: 0.85em (电脑端默认 input 字体大小) */
            color: var(--text-color); /*  全局文本颜色，输入框文字  */
            background-color: #444;
            transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out, color 0.2s ease-in-out, background-color 0.2s ease-in-out;
            user-select: text !important;
            min-width: auto;
-           margin: 0; /* v4.4h 移除 margin */
         }
 
         #replacement-editor input::placeholder { /*  输入框 placeholder 颜色  */
@@ -276,13 +279,13 @@
           #replacement-editor .button-pagination-container button,
           #choice-modal button,
           #quick-replace-modal button { /* v4.1 包含 quick-replace-modal button */
-            padding: 4px 6px; /* v4.4h 极小 padding */
+            padding: 7px 10px; /* v4.4h 恢复 padding: 7px 10px (电脑端默认按钮 padding) */
              cursor: pointer;
              border: none;
-             border-radius: 6px; /* v4.4h 更小圆角 */
+             border-radius: 8px; /* v4.4h 恢复 border-radius: 8px */
              background-color: var(--button-bg-color); /* 使用半透明背景色 */
               color: var(--button-text-color); /* 按钮文字颜色，使用 --button-text-color */
-              font-size: 0.75em; /* v4.4h 极小字体 */
+              font-size: 0.9em; /* v4.4h 恢复 font-size: 0.9em (电脑端默认按钮字体大小) */
               transition: background-color var(--button-transition-duration) ease-in-out, transform var(--button-transition-duration) var(--button-transition-easing), box-shadow var(--button-transition-duration) ease-in-out, color var(--button-transition-duration) ease-in-out; /* v4.3 使用统一定义的动画变量 */
           }
           #replacement-editor button:hover,
@@ -290,23 +293,23 @@
           #choice-modal button:hover,
           #quick-replace-modal button:hover { /* v4.1 包含 quick-replace-modal button */
               background-color: var(--button-hover-bg-color);
-              transform: scale(1.04); /* v4.4h Hover 放大比例略微减小 */
-              box-shadow: 0 2px 6px rgba(0,0,0,0.12); /* v4.4h Hover 阴影略微减小 */
+              transform: scale(1.06); /* v4.3 Hover 放大比例略微增加 */
+              box-shadow: 0 3px 8px rgba(0,0,0,0.15); /* v4.3 Hover 阴影更明显 */
            }
           #replacement-editor button:active,
           #replacement-editor .button-pagination-container button:active,
           #choice-modal button:active,
           #quick-replace-modal button:active { /* v4.1 包含 quick-replace-modal button */
              background-color: var(--button-active-bg-color); /* v4.3 点击反馈 */
-             transform: scale(0.98); /* v4.4h Active 缩小比例略微减小 */
-             box-shadow: inset 0 1px 3px rgba(0,0,0,0.15); /* v4.4h Active 内阴影略微减小 */
+             transform: scale(0.97); /* v4.3 Active 缩小比例略微增加 */
+             box-shadow: inset 0 2px 6px rgba(0,0,0,0.2); /* v4.3 Active 内阴影更明显 */
           }
             #replacement-editor .button-pagination-container {
                display: flex;
                justify-content: space-around;
                align-items: center;
-               padding-top: 8px; /* v4.4b 添加 padding-top */
-               padding-bottom: 8px; /* v4.4b 添加 padding-bottom */
+               padding-top: 10px; /* v4.4b 添加 padding-top */
+               padding-bottom: 10px; /* v4.4b 添加 padding-bottom */
                position: absolute; /* v4.4b  绝对定位 */
                bottom: 0; /* v4.4b  底部对齐 */
                left: 0;  /* v4.4b  左对齐 */
@@ -317,10 +320,10 @@
             #replacement-editor .editor-buttons-container {
                display: flex;
                justify-content: center;
-               gap: 8px; /* v4.4h 按钮间距减小 */
-               padding-bottom: 10px; /* v4.4h padding-bottom 减小 */
+               gap: 12px; /* v4.4h 恢复 gap: 12px (电脑端默认按钮间距) */
+               padding-bottom: 15px; /* v4.4b  保留 padding-bottom */
                 position: absolute; /* v4.4b  绝对定位 */
-               bottom: 40px; /* v4.4b  定位在分页按钮上方 */
+               bottom: 50px; /* v4.4b  定位在分页按钮上方 */
                left: 0;  /* v4.4b  左对齐 */
                width: 100%; /* v4.4b  宽度 100% */
                 background-color: var(--modal-bg-color); /* v4.4b  确保背景色一致 */
@@ -331,47 +334,47 @@
            #replacement-editor .delete-button-enhanced {
               background-color: rgba(0, 0, 0, 0.5); /* 半透明黑色背景 */
               color: var(--text-color); /*  全局文本颜色，删除按钮文字  */
-             border-radius: 6px; /* v4.4h 更小圆角 */
-             padding: 3px 5px; /* v4.4h 极小 padding */
+             border-radius: 8px; /* v4.4h 恢复 border-radius: 8px */
+             padding: 6px 10px; /* v4.4h 恢复 padding: 6px 10px (电脑端默认删除按钮 padding) */
              border: none; /*  无边框  */
               margin-left: auto; /*  推到右侧  */
             cursor: pointer;
-            font-size: 0.7em; /* v4.4h 极小字体 */
+            font-size: 0.8em; /* v4.4h 恢复 font-size: 0.8em (电脑端默认删除按钮字体大小) */
             line-height: 1;
             transition: background-color var(--button-transition-duration) ease-in-out, transform var(--button-transition-duration) var(--button-transition-easing), box-shadow var(--button-transition-duration) ease-in-out, color var(--button-transition-duration) ease-in-out; /* v4.3 使用统一定义的动画变量 */
             display: flex; /* 弹性布局 */
             align-items: center; /* 垂直居中 */
             justify-content: center; /* 水平居中 */
-            width: 18px; /*  固定宽度  v4.4h 更小尺寸 */
-            height: 18px; /*  固定高度  v4.4h 更小尺寸 */
+            width: 24px; /*  固定宽度  v4.4h 恢复 width: 24px (电脑端默认删除按钮宽度) */
+            height: 24px; /*  固定高度  v4.4h 恢复 height: 24px (电脑端默认删除按钮高度) */
            }
             #replacement-editor .delete-button-enhanced:hover{
                  background-color: rgba(0, 0, 0, 0.7); /* Hover 时稍微加深背景 */
-                 transform: scale(1.04); /* v4.4h Hover 放大比例略微减小 */
-                 box-shadow: 0 2px 6px rgba(0,0,0,0.2); /* v4.4h Hover 阴影略微减小 */
+                 transform: scale(1.06); /* v4.3 Hover 放大比例略微增加 */
+                 box-shadow: 0 3px 8px rgba(0,0,0,0.3); /* v4.3 Hover 阴影更明显 */
             }
             #replacement-editor .delete-button-enhanced:active{ /* v4.3 点击反馈 */
                  background-color: rgba(0, 0, 0, 0.8); /* v4.3 点击反馈 */
-                 transform: scale(0.97); /* v4.4h Active 缩小比例略微减小 */
-                 box-shadow: inset 0 2px 4px rgba(0,0,0,0.3); /* v4.4h Active 内阴影略微减小 */
+                 transform: scale(0.96); /* v4.3 Active 缩小比例略微增加 */
+                 box-shadow: inset 0 3px 6px rgba(0,0,0,0.4); /* v4.3 Active 内阴影更明显 */
             }
 
 
             #replacement-editor .scrollable-container {
                overflow-x: hidden;
               overflow-y: auto;
-                max-height: calc(100% - 90px); /* v4.4b  调整 scrollable-container 最大高度，留出底部按钮空间 (假设 pagination-container + editor-buttons-container 高度共 100px) */
-                padding-right: 6px; /* v4.4h padding-right 减小 */
-                border-radius: 8px; /* v4.4h 更小圆角 */
+                max-height: calc(100% - 100px); /* v4.4b  调整 scrollable-container 最大高度，留出底部按钮空间 (假设 pagination-container + editor-buttons-container 高度共 100px) */
+                padding-right: 8px; /* v4.4h 恢复 padding-right: 8px (电脑端默认滚动容器 padding) */
+                border-radius: 10px; /* v4.4h 恢复 border-radius: 10px */
                 transition: background-color 0.3s ease-in-out;
                  background-color: transparent;
-                 padding-bottom: 50px; /* v4.4b  增加 padding-bottom，防止内容被固定按钮遮挡 */
+                 padding-bottom: 60px; /* v4.4b  增加 padding-bottom，防止内容被固定按钮遮挡 */
             }
             #replacement-editor .scrollable-content {
                display: flex;
                 flex-direction: column;
-                padding-right: 4px; /* v4.4h padding-right 减小 */
-                padding-bottom: 4px; /* v4.4h padding-bottom 减小 */
+                padding-right: 8px; /* v4.4h 恢复 padding-right: 8px (电脑端默认内容滚动区域 padding) */
+                padding-bottom: 6px; /* v4.4h 恢复 padding-bottom: 6px */
             }
 
 
@@ -380,13 +383,13 @@
 
 
         #replacement-editor .pagination-container button {
-            margin: 0 3px; /* v4.4h margin 减小 */
-            padding: 4px 6px; /* v4.4h padding 减小 */
+            margin: 0 5px; /* v4.4h 恢复 margin: 0 5px (电脑端默认分页按钮 margin) */
+            padding: 6px 9px; /* v4.4h 恢复 padding: 6px 9px (电脑端默认分页按钮 padding) */
             border-radius: 6px;
             background-color: var(--button-bg-color); /* 使用半透明背景色 */
             border: none;
             color: var(--text-color-light); /*  辅助文本颜色，分页按钮文字  */
-            font-size: 0.75em; /* v4.4h 极小字体 */
+            font-size: 0.8em; /* v4.4h 恢复 font-size: 0.8em (电脑端默认分页按钮字体大小) */
             transition: background-color var(--button-transition-duration) ease-in-out, color var(--button-transition-duration) ease-in-out, transform var(--button-transition-duration) var(--button-transition-easing), color var(--button-transition-duration) ease-in-out; /* v4.3 使用统一定义的动画变量 */
         }
          #replacement-editor .pagination-container button:hover {
@@ -401,7 +404,7 @@
          }
 
 
-       /* 快速替换模态框样式 */
+       /* 快速替换模态框样式 - 电脑端样式保持不变 */
         #quick-replace-modal {
             position: fixed;
             z-index: 10002; /* 比 #replacement-editor 更高 */
@@ -462,71 +465,10 @@
 
         /* 媒体查询，针对小屏幕设备（例如手机） - 保持极致紧凑样式 */
         @media (max-width: 768px) {
-            /* 移动端输入框和按钮字体颜色修复 - 确保移动端也使用白色字体 */
-            #replacement-editor input,
-            #replacement-editor button,
-            #replacement-editor .button-pagination-container button,
-            #replacement-editor .editor-buttons-container button,
-            #replacement-editor .pagination-container button,
-            #choice-modal button,
-            #quick-replace-modal button { /* 移动端快速替换模态框按钮 */
-                color: var(--text-color); /* 强制设置移动端字体颜色为浅色白色 */
+            :root {
+                --base-font-size: 0.8em; /* v4.4i 手机端基础字体大小 */
             }
-            #replacement-editor input::placeholder { /*  移动端输入框 placeholder 颜色  */
-                color: var(--text-color-light); /*  辅助文本颜色，placeholder  */
-            }
-             #quick-replace-modal { /* 移动端快速替换模态框样式 */
-                width: 90%;
-                max-width: 300px;
-                padding: 12px 15px;
-                font-size: 0.85em;
-                backdrop-filter: blur(8px); /* 移动端模糊程度 */
-                -webkit-backdrop-filter: blur(8px); /* 兼容旧版 Safari */
-             }
-            #quick-replace-modal input { /* 移动端快速替换模态框输入框 */
-                padding: 6px;
-                font-size: 0.8em;
-            }
-             #quick-replace-modal button { /* 移动端快速替换模态框按钮 */
-                 padding: 7px 12px;
-                 font-size: 0.8em;
-             }
-             #replacement-editor #quick-replace-toggle-container { /* v4.2 移动端调整 */
-                 bottom: 10px;
-                 right: 10px;
-                 width: 32px;
-                 height: 18px;
-             }
-             #replacement-editor #quick-replace-toggle-button { /* v4.4 移动端圆角 */
-                 border-radius: 12px;
-             }
-             #replacement-editor #quick-replace-toggle-button:before { /* v4.2 移动端调整 */
-                 width: 14px;
-                 height: 14px;
-              }
-             #replacement-editor #quick-replace-toggle-button.off:before { /* v4.2 移动端调整 */
-                 transform: translateX(14px); /* OFF 状态滑块位移 */
-             }
-             #replacement-editor input { /* v4.4 移动端输入框宽度 */
-                 width: 140px; /* v4.4  移动端固定宽度 */
-             }
-             #replacement-editor .scrollable-container { /* v4.4b 移动端 scrollable-container 高度调整 */
-                 max-height: calc(100% - 90px); /* v4.4b 移动端调整高度，预留更少底部空间 */
-                 padding-bottom: 50px; /* v4.4b 移动端调整 padding-bottom */
-             }
-             #replacement-editor .editor-buttons-container { /* v4.4b 移动端 editor-buttons-container 位置调整 */
-                 bottom: 40px; /* v4.4b  移动端定位在分页按钮上方 */
-             }
-             #replacement-editor .button-pagination-container { /* v4.4b 移动端 button-pagination-container 样式 */
-                 padding-top: 8px; /* v4.4b 移动端调整 padding-top */
-                 padding-bottom: 8px; /* v4.4b 移动端调整 padding-bottom */
-             }
-
-             #editor-quick-replace-switch-container { /* v4.4e 移动端调整 */
-                bottom: 8px;
-                right: 8px;
-             }
-             #replacement-editor { /* v4.4f 移动端编辑器窗口整体样式调整 */
+            #replacement-editor { /* v4.4f 移动端编辑器窗口整体样式调整 */
                 width: 90%; /* v4.4f 百分比宽度 */
                 max-width: 360px; /* v4.4f 最大宽度限制 */
                 padding: 10px; /* v4.4h 极致紧凑 padding */
@@ -545,6 +487,7 @@
                  padding: 3px; /* v4.4h 极致紧凑 padding */
                  border-radius: 4px; /* v4.4h 更小圆角 */
                  margin-bottom: 6px; /* v4.4h input margin-bottom 减小 */
+                 width: 120px; /* v4.4h 极小宽度 */
              }
              #replacement-editor button, /* v4.4f 移动端 按钮字体和 padding */
              #replacement-editor .button-pagination-container button,
@@ -566,12 +509,10 @@
                   margin: 0; /* v4.4h 移除 margin */
              }
              #quick-replace-modal { /* v4.4f 移动端 快速替换 modal 样式 */
-                 padding: 8px 12px; /* v4.4h 极致紧凑 padding */
-                 border-radius: 10px; /* v4.4h 更小圆角 */
+                 padding: 10px 15px; /* v4.4f 极致紧凑 padding */
              }
              #quick-replace-modal h2 { /* v4.4f 移动端 快速替换 modal 标题字体大小 */
                  margin-bottom: 8px; /* v4.4h margin-bottom 减小 */
-                  font-size: 1em; /* v4.4h 更小标题字体 */
              }
              #quick-replace-modal input { /* v4.4f 移动端 快速替换 modal 输入框 margin-bottom 减小 */
                  margin-bottom: 10px;
@@ -580,24 +521,42 @@
              }
              #replacement-editor .replacement-row { /* v4.4g 移动端 replacement-row 增加 padding-right 留出删除按钮空间 */
                  padding-right: 20px; /* v4.4h padding-right 进一步减小 */
+                  margin-bottom: 10px; /* v4.4g 增加 replacement-row 的 margin-bottom */
+                    flex-direction: column; /* v4.4g 垂直排列 */
+                    align-items: stretch; /* v4.4g 拉伸对齐 */
+                    display: flex; /* v4.4g 恢复 flex 布局 */
+             }
+             #replacement-editor label {
+                 flex-basis: auto; /* v4.4g flex-basis 设为 auto */
+                 text-align: left; /* v4.4g label 左对齐 */
+                 white-space: normal; /* v4.4g 允许 label 文本换行 */
+                 margin-right: 0; /* v4.4g 移除 label 的 margin-right */
+             }
+             #replacement-editor input {
+                  width: calc(100% - 10px); /* v4.4g 输入框宽度 100% 减去一些 padding */
              }
              #replacement-editor .delete-button-enhanced { /* v4.4g 移动端 delete-button 字体和尺寸进一步减小 */
                  font-size: 0.6em; /* v4.4h 极小字体 */
-                 width: 16px; /*  固定宽度  v4.4h 更小尺寸 */
-                 height: 16px; /*  固定高度  v4.4h 更小尺寸 */
+                 width: 24px; /*  固定宽度  v4.4h 恢复 width: 24px  (调整为稍大尺寸，方便点击) */
+                 height: 24px; /*  固定高度  v4.4h 恢复 height: 24px (调整为稍大尺寸，方便点击) */
                  border-radius: 6px; /* v4.4h 更小圆角 */
+                 position: relative; /* v4.4g 移除绝对定位 */
+                 top: auto; /* v4.4g 移除 top 定位 */
+                 right: auto; /* v4.4g 移除 right 定位 */
+                 transform: none; /* v4.4g 移除 transform */
+                 margin-left: auto; /* v4.4g 恢复 margin-left: auto; */
              }
              #replacement-editor .scrollable-container { /* v4.4h 移动端 scrollable-container padding 减小 */
-                 padding-right: 4px; /* v4.4h padding-right 减小 */
+                 padding-right: 8px; /* v4.4h 恢复 padding-right: 8px */
              }
              #replacement-editor .scrollable-content { /* v4.4h 移动端 scrollable-content padding 减小 */
-                 padding-right: 4px; /* v4.4h padding-right 减小 */
-                 padding-bottom: 4px; /* v4.4h padding-bottom 减小 */
+                 padding-right: 8px; /* v4.4h 恢复 padding-right: 8px */
+                 padding-bottom: 6px; /* v4.4h 恢复 padding-bottom: 6px */
              }
         }
 
 
-        /* v4.4e 编辑器窗口右下角右键开关样式 */
+        /* v4.4e 编辑器窗口右下角右键开关样式 - 电脑端样式保持不变 */
         #editor-quick-replace-switch-container {
             position: absolute;
             bottom: 15px; /* 距离底部 */
