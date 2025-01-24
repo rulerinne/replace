@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         动态文本替换悬浮球
 // @namespace    http://yournamespace.com
-// @version      4.4n
-// @description  我不好说
+// @version      4.4m
+// @description  在网页右上角显示一个美观的动态文本替换悬浮球，集成ON/OFF开关，点击悬浮球主体弹出菜单，绿灯ON，红灯OFF，修复分页BUG，优化手机端页面适配，紧凑横向规则显示，限制规则显示数量, 修复手机端悬浮窗超出屏幕边界BUG, 进一步优化手机端替换规则排布，极致紧凑横向显示，解决超出遮挡问题, 新增分辨率自适应样式，电脑端显示更清晰, 解决刷新页面时原文闪烁问题, 优化悬浮球点击行为，再次点击可收回菜单, 默认深色模式，界面更简洁, 优化移动端字体颜色，提升桌面端美观度, 修复新增条目 BUG，界面更紧凑, 新增半透明模糊悬浮窗和按钮效果，更美观, 再次修复新增条目 BUG (v3.8 Bugfix), 美化删除按钮样式为半透明黑色按钮, 全局字体颜色更新为浅色白色系 (v3.9 Font Update), 新增右键选中文本快速替换功能 (v4.0 New Feature), 修复新增条目报错，增强动画效果，美化按钮样式 (v4.1 Animation & Button Update), 新增右键替换开关，可禁用默认右键菜单 (v4.2 Toggle Switch Feature), 全面增强弹出窗口和按钮动画效果 (v4.3 Animation Overhaul), 美化滑动条，调整输入框宽度，固定编辑器窗口大小 (v4.4 UI Refinements), 修复匹配不严格问题，实现全词严格匹配 (v4.4c Strict Matching Fix), 添加 null 检查，增强代码健壮性，尝试解决 `nodeType` is null 错误 (v4.4d Null Check), 在文本替换规则编辑界面右下角新增右键替换开关 (v4.4e Editor Switch), 全面适配手机端网页浏览，优化悬浮窗显示 (v4.4f Mobile Adaption), 手机端规则条目极致紧凑排版优化 (v4.4g Mobile Layout Refine), 手机端极致紧凑横向排版再优化，修复悬浮球不显示和 appendChild 错误 (v4.4j Mobile Layout & Bugfix), 手机端字体和排版优化，彻底修复分页 BUG (v4.4k Mobile Font & Pagination Fix), **电脑端恢复显示右键开关 & 手机端隐藏 (v4.4l Switch Display Platform Fix), 电脑端恢复显示右键开关 & 手机端隐藏 (v4.4m Switch Display Platform Fix)**.
 // @author       你的名字
 // @match        *://*/*
 // @grant        GM_addStyle
@@ -673,6 +673,9 @@
         <div id="quick-replace-toggle-container">  <!-- v4.2 悬浮球右键替换开关容器 -->
             <div id="quick-replace-toggle-button" class="${isQuickReplaceEnabled ? 'on' : 'off'}"></div> <!-- v4.2 悬浮球右键替换开关按钮，初始状态 -->
         </div>
+        <div id="editor-quick-replace-switch-container">  <!-- v4.4e 编辑器窗口右下角右键开关容器 -->
+            <div id="editor-quick-replace-switch-button" class="${isQuickReplaceEnabled ? 'on' : 'off'}"></div> <!-- v4.4e 编辑器窗口右下角右键开关按钮，初始状态 -->
+        </div>
     `;
     document.body.appendChild(replacementEditor);
 
@@ -835,36 +838,22 @@
                 if (ruleIndex >= startIndex && ruleIndex < endIndex) {
                     const replacementRow = document.createElement('div');
                     replacementRow.className = 'replacement-row';
-
-                    // 原文部分
-                    const originalDiv = document.createElement('div'); // 创建一个 div 包裹 原文 label 和 input
-                    originalDiv.style.display = 'flex'; // 使用 Flexbox 布局
-                    originalDiv.style.alignItems = 'baseline'; // 垂直对齐方式
-
+                    // 原文输入框
                     const originalLabel = document.createElement('label');
                     originalLabel.textContent = '原文：';
-                    originalDiv.appendChild(originalLabel);
+                    replacementRow.appendChild(originalLabel);
                     const originalInput = document.createElement('input');
                     originalInput.value = key;
                     originalInput.placeholder = '请输入要替换的原文';
-                    originalDiv.appendChild(originalInput);
-                    replacementRow.appendChild(originalDiv); // 将包含 label 和 input 的 div 添加到 row
-
-                    // 替换文部分
-                    const translatedDiv = document.createElement('div'); // 创建一个 div 包裹 替换文 label 和 input
-                    translatedDiv.style.display = 'flex'; // Flexbox 布局
-                    translatedDiv.style.alignItems = 'baseline'; // 垂直对齐
-
+                    replacementRow.appendChild(originalInput);
+                    // 替换文输入框
                     const translatedLabel = document.createElement('label');
                     translatedLabel.textContent = '替换：';
-                    translatedDiv.appendChild(translatedLabel);
+                    replacementRow.appendChild(translatedLabel);
                     const translatedInput = document.createElement('input');
                     translatedInput.value = replacementTable[key];
                     translatedInput.placeholder = '请输入替换后的文本';
-                    translatedDiv.appendChild(translatedInput);
-                    replacementRow.appendChild(translatedDiv); // 将包含 label 和 input 的 div 添加到 row
-
-
+                    replacementRow.appendChild(translatedInput);
                     // 删除按钮 (确保每个规则只创建一个删除按钮)
                     const deleteButton = document.createElement('button');
                     deleteButton.textContent = 'X';
