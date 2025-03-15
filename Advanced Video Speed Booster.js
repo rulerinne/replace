@@ -6,6 +6,7 @@
 // @author       Your Name
 // @match        https://www.cqooc.com/*
 // @grant        none
+// @updateURL    https://github.com/rulerinne/replace/blob/main/Advanced%20Video%20Speed%20Booster.js
 // ==/UserScript==
 
 (function() {
@@ -89,4 +90,3 @@
     handleExistingVideos();
     setupVideoObserver();
 })();
-
