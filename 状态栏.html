@@ -1,7 +1,741 @@
-```html
-<body>
-<script>
-    $('body').load('https://testingcf.jsdelivr.net/gh/emo-lsp/SillyTavern@refs/heads/main/XP/状态栏.html');
-</script>
-</body>
-```
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>故事状态栏美化</title>
+    <style>
+      :root { 
+        --panel-bg: rgba(18, 24, 46, 0.9); 
+        --header-bg: rgba(10, 15, 30, 0.95); 
+        --border-color: #4a5fc1; 
+        --accent-color: #7fdefe; 
+        --accent-rgb: 127, 222, 254; 
+        --text-primary: #e0e6f0; 
+        --text-secondary: #98a6c3; 
+        --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; 
+        --font-body: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+        
+        /* Modern UI Vars */
+        --shadow-sm: 0 2px 8px rgba(0,0,0,0.2);
+        --shadow-md: 0 8px 24px rgba(0,0,0,0.3);
+        --shadow-lg: 0 16px 48px rgba(0,0,0,0.4), 0 0 40px rgba(127, 222, 254, 0.05);
+        --glass-border: 1px solid rgba(74, 95, 193, 0.2);
+      }
+      body { font-family: var(--font-body), sans-serif; margin: 0; padding: 20px; }
+      .status-panel {
+        font-family: var(--font-body), sans-serif; color: var(--text-primary); background: var(--panel-bg);
+        border: 1px solid var(--border-color); border-radius: 12px; max-width: 1200px; margin: 0 auto;
+        /* Limit total height including header */
+        max-height: var(--content-max-height, 80vh);
+        position: relative; display: flex; flex-direction: column;
+        box-shadow: var(--shadow-lg); box-sizing: border-box;
+      }
+      .status-panel.fullbleed { max-width: none; width: 98vw; margin-left: 0; margin-right: 0; left: 50%; transform: translateX(-50%); }
+      
+      /* Animation Wrapper */
+      .collapsible-wrapper {
+        display: grid;
+        grid-template-rows: 1fr;
+        width: 100%;
+        flex: 1; min-height: 0; /* Constraint height to parent flex container */
+        overflow: hidden; /* Needed for grid transition */
+      }
+      .status-panel.collapsed .collapsible-wrapper {
+        grid-template-rows: 0fr;
+        flex: 0; /* Don't take space when collapsed */
+      }
+      .collapsible-inner {
+        overflow: hidden;
+        min-height: 0;
+        display: flex;
+        flex-direction: column;
+        height: 100%; /* Fill the wrapper */
+        width: 100%;
+        transform: translateZ(0); /* Fix painting issues */
+      }
+      
+      .status-panel.collapsed { display: block; } /* Keep panel visible for header */
+      /* .status-panel.collapsed .tabs-container ... removed, handled by grid */
+      .panel-header {
+        background: var(--header-bg); padding: 10px 12px; border-bottom: 1px solid var(--border-color);
+        display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;
+        box-shadow: inset 0 -1px 0 rgba(74,95,193,0.25); flex-shrink: 0;
+      }
+      .status-panel.attire-cols-2 .tab-content .attire-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .status-panel.attire-cols-3 .tab-content .attire-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .status-panel.attire-cols-4 .tab-content .attire-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .panel-title {
+        font-family: var(--font-ui); font-size: calc(16px * var(--font-mult, 1)); color: var(--accent-color);
+        text-shadow: 0 0 5px var(--accent-color); display: flex; align-items: center; gap: 10px;
+      }
+      .header-info {
+        display: flex; align-items: center; gap: 8px; font-size: calc(12px * var(--font-mult, 1));
+        color: var(--text-secondary); font-weight: var(--text-weight, 500); flex-wrap: wrap; flex-basis: 100%; margin-top: 4px;
+      }
+      .header-info .kv-value { color: var(--text-primary); }
+      .control-buttons { display: flex; gap: 8px; }
+      .control-btn {
+        width: 32px; height: 32px; border: none; background: rgba(var(--accent-rgb), 0.1); color: var(--accent-color);
+        border-radius: 6px; cursor: pointer; display: flex; align-items: center; justify-content: center;
+      }
+      .control-btn:hover { background: rgba(var(--accent-rgb), 0.2); }
+      .settings-overlay { position: absolute; inset: 0; display: none; z-index: 100; }
+      .settings-overlay.open { display: block; }
+      .settings-backdrop { position: absolute; inset: 0; background: rgba(0,0,0,0.5); }
+      .settings-sheet {
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+        background: var(--panel-bg); border: 1px solid var(--border-color); border-radius: 12px;
+        padding: 12px 14px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+      }
+      .settings-sheet { width: min(560px, 92%); }
+      .sheet-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; color: var(--accent-color); font-weight: 600; }
+      .sheet-close { width: 28px; height: 28px; border: 1px solid var(--border-color); border-radius: 6px; background: transparent; color: var(--text-secondary); cursor: pointer; }
+      .sheet-body { overflow: auto; scrollbar-width: thin; }
+      .sheet-body::-webkit-scrollbar { width: 10px; }
+      .sheet-body::-webkit-scrollbar-thumb { background: rgba(127, 222, 254, 0.35); border-radius: 8px; }
+      .settings-item { display: flex; align-items: center; justify-content: space-between; gap: 8px; font-size: 13px; color: var(--text-primary); margin-bottom: 8px; }
+      .settings-item label { color: var(--text-secondary); }
+      .tabs-container {
+        display: flex; flex-wrap: wrap; gap: 6px; background: rgba(0,0,0,0.2); border-bottom: 1px solid rgba(74, 95, 193, 0.3);
+        position: relative; overflow-x: auto; flex-shrink: 0; z-index: 5;
+      }
+      .tab-button {
+        padding: 12px 16px; border: 1px solid transparent; border-radius: 6px; background: transparent;
+        color: var(--text-secondary); cursor: pointer; font-size: calc(14px * var(--font-mult, 1)); white-space: nowrap;
+      }
+      .tab-button.active { color: var(--accent-color); font-weight: 500; border-color: var(--accent-color); }
+      .tab-content-container { flex: 1; overflow: hidden; min-height: 0; position: relative; }
+      .tab-content { display: none; padding: 10px; height: 100%; overflow-y: auto; box-sizing: border-box; }
+      .tab-content.active { display: block; }
+      .tab-content::-webkit-scrollbar { width: 8px; }
+      .tab-content::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 6px; }
+      
+      .svg-icon { width: 1.1em; height: 1.1em; vertical-align: -0.15em; fill: currentColor; }
+      .control-btn .svg-icon { width: 16px; height: 16px; }
+
+      .info-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; margin-bottom: 10px; }
+      .player-info-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .info-block { 
+        background: rgba(30, 35, 50, 0.4); 
+        border: var(--glass-border); 
+        border-radius: 8px; 
+        padding: 12px; 
+        height: 100%; 
+        display: flex; 
+        flex-direction: column; 
+        box-sizing: border-box; 
+        box-shadow: var(--shadow-sm);
+      }
+      .info-block h3 {
+        margin: 0 0 10px 0; padding-bottom: 8px; font-size: calc(15px * var(--font-mult, 1)); font-weight: 500;
+        color: var(--accent-color); border-bottom: 1px solid rgba(74, 95, 193, 0.25); display: flex; align-items: center; gap: 8px;
+      }
+      .block-body { flex: 1; overflow: visible; transition: all 0.3s ease; }
+      .block-body.collapsed { display: none; }
+      
+      .info-block.attached-top {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+        border-top: none;
+        border-color: var(--accent-color);
+        margin-top: 0;
+        background: rgba(20, 25, 40, 0.6);
+        box-shadow: var(--shadow-md);
+      }
+      
+      .kv-pair { display: flex; justify-content: space-between; align-items: flex-start; gap: 10px; font-size: calc(13px * var(--font-mult, 1)); padding: 6px 0; border-bottom: 1px solid rgba(74, 95, 193, 0.1); }
+      .kv-pair:last-child { border-bottom: none; }
+      .kv-label { color: var(--text-secondary); white-space: nowrap; font-weight: var(--text-weight, 500); }
+      .kv-value { color: var(--text-primary); text-align: var(--text-align, right); word-break: break-word; font-weight: var(--text-weight, 500); }
+      .kv-value.thought { font-style: italic; color: #ffc4bd; }
+      .attire-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px 8px; }
+      .attire-cell {
+        background: transparent;
+        border: none;
+        border-bottom: 1px solid rgba(74, 95, 193, 0.1);
+        padding: 4px 0;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        text-align: left;
+        min-height: auto;
+        justify-content: flex-start;
+      }
+      .attire-cell-label {
+        font-size: calc(11px * var(--font-mult, 1));
+        color: var(--text-secondary);
+        margin-bottom: 2px;
+        opacity: 0.8;
+        font-weight: normal;
+      }
+      .attire-cell-value {
+        font-size: calc(13px * var(--font-mult, 1));
+        color: var(--text-primary);
+        line-height: 1.3;
+        word-break: break-word;
+        font-weight: var(--text-weight, 500);
+      }
+      
+      /* Merged Status Block */
+      .merged-content { display: flex; gap: 24px; align-items: stretch; }
+      .merged-section { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+      
+      @media (max-width: 500px) {
+        .merged-content { flex-direction: column; gap: 16px; }
+      }
+
+      /* Compact Role Header Design */
+      .compact-role-header {
+        display: flex;
+        align-items: center;
+        background: rgba(30, 35, 50, 0.9);
+        border: 1px solid var(--accent-color);
+        border-radius: 12px 12px 0 0;
+        padding: 12px 16px;
+        margin-bottom: 0;
+        box-shadow: var(--shadow-md);
+        position: relative;
+        overflow: hidden;
+        min-height: auto;
+        border-bottom: 1px solid rgba(74, 95, 193, 0.2);
+        z-index: 2;
+      }
+      .compact-role-header.attached-bottom {
+        border-bottom: none;
+        box-shadow: 0 -4px 10px rgba(0,0,0,0.15); /* Shadow mainly upwards to avoid ledge on body */
+      }
+      
+      .compact-role-header::before {
+        content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%;
+        background: var(--accent-color); opacity: 0.8;
+      }
+      /* Hide the original header inside the attached block to avoid redundancy if desired, 
+         but keeping it as a section title is also fine. The user only asked to remove the sub-labels. 
+         Let's keep the block header for collapse functionality but maybe style it simpler. */
+      .info-block.attached-top > h3 {
+        border-bottom: 1px solid rgba(74, 95, 193, 0.15);
+        background: rgba(30, 35, 50, 0.4);
+        margin: -12px -12px 12px -12px;
+        padding: 10px 12px;
+        font-size: calc(14px * var(--font-mult, 1));
+      }
+
+      .crh-left {
+        flex: 0 0 145px;
+        width: 145px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        text-align: center;
+        gap: 4px;
+        padding-right: 8px;
+      }
+      .crh-name-row {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        margin-bottom: 0;
+        width: 100%;
+      }
+      .crh-icon {
+        width: 18px;
+        height: 18px;
+        color: var(--accent-color);
+        flex-shrink: 0;
+      }
+      .crh-name {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--accent-color);
+        text-shadow: 0 0 5px rgba(74, 144, 226, 0.3);
+        line-height: 1.1;
+        word-break: break-word;
+      }
+      .crh-details {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.7);
+        line-height: 1.3;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+      }
+      
+      .crh-divider { width: 1px; background: rgba(255,255,255,0.1); margin: 4px 10px; display: none; align-self: stretch; }
+      @media (min-width: 600px) {
+        .crh-divider { display: block; }
+      }
+
+      .crh-right {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-width: 0; 
+      }
+      .crh-stats-row { display: flex; flex-wrap: wrap; gap: 12px; row-gap: 6px; }
+      .crh-stat-item { flex: 1; min-width: 80px; display: flex; flex-direction: column; justify-content: center; }
+      .crh-stat-val { font-family: 'Orbitron', sans-serif; font-size: 1.1rem; color: #fff; font-weight: 500; letter-spacing: 0.5px; order: 2; }
+      .crh-stat-lbl { font-size: 0.75rem; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 2px; order: 1; }
+      
+      .crh-appearance {
+        margin-top: 8px;
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.9);
+        line-height: 1.4;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+        padding-top: 6px;
+      }
+      .crh-appearance-label {
+        font-weight: bold;
+        color: var(--accent-color);
+        margin-right: 4px;
+      }
+
+      @media (max-width: 600px) {
+        .compact-role-header { flex-direction: column; gap: 12px; }
+        .crh-left { border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px; max-width: none; }
+        .crh-divider { display: none; }
+        .crh-stats-row { gap: 16px; justify-content: space-between; }
+      }
+      
+      @media (max-width: 500px) {
+        .info-grid { grid-template-columns: 1fr; }
+        .player-info-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .tabs-container { flex-wrap: nowrap; }
+        .tab-button { flex: 0 0 auto; }
+        .status-panel.collapsed { max-height: 160px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="status-panel">
+      <div class="panel-header">
+        <div class="panel-title">
+          <span data-icon="user-circle" style="width:20px;height:20px;opacity:0.8"></span>
+          S T A T U S - P A N E L
+        </div>
+        <div class="control-buttons">
+          <button class="control-btn" onclick="toggleCollapse()" title="折叠/展开"><span data-icon="compress"></span></button>
+          <button class="control-btn" onclick="toggleSettings()" title="设置"><span data-icon="cog"></span></button>
+        </div>
+        <div class="header-info">
+          <span class="kv-label">地点：</span><span id="scene-location" class="kv-value"></span><span class="sep">|</span>
+          <span class="kv-label">时间：</span><span id="scene-time" class="kv-value"></span><span class="sep">|</span>
+          <span class="kv-label">天气：</span><span id="scene-weather" class="kv-value"></span>
+        </div>
+      </div>
+
+      <div class="collapsible-wrapper">
+        <div class="collapsible-inner">
+          <div id="tabs-container" class="tabs-container"></div>
+
+          <div class="tab-content-container">
+            <div id="player" class="tab-content active">
+              <div class="compact-role-header">
+                <div class="crh-left">
+                  <div class="crh-name-row">
+                    <span data-icon="user-circle" class="crh-icon"></span>
+                    <div id="player-name" class="crh-name"></div>
+                  </div>
+                  <div id="player-details" class="crh-details"></div>
+                </div>
+                <div class="crh-divider"></div>
+                <div class="crh-right">
+                  <div class="crh-stats-row">
+                    <div class="crh-stat-item"><div class="crh-stat-val" style="font-size: 1.1rem; color: var(--accent-color); order: 1;">当前位置</div><div id="player-position" class="crh-stat-lbl" style="font-size: 0.9rem; color: var(--text-primary); text-transform: none; margin-top:4px; font-weight: 400; letter-spacing: 0; order: 2;"></div></div>
+                    <div class="crh-stat-item"><div class="crh-stat-val" style="font-size: 1.1rem; color: var(--accent-color); order: 1;">当前动作</div><div id="player-action" class="crh-stat-lbl" style="font-size: 0.9rem; color: var(--text-primary); text-transform: none; margin-top:4px; font-weight: 400; letter-spacing: 0; order: 2;"></div></div>
+                  </div>
+                </div>
+              </div>
+              <div class="info-grid player-info-grid">
+                <div class="info-block">
+                  <h3><span data-icon="heart"></span> 生理信息</h3>
+                  <div class="kv-pair"><span class="kv-label">阴茎状态：</span><span id="player-penis-status" class="kv-value"></span></div>
+                  <div class="kv-pair"><span class="kv-label">阴茎长度：</span><span id="player-penis-length" class="kv-value"></span></div>
+                </div>
+                <div class="info-block"><h3><span data-icon="shirt"></span> 着装详情</h3><div id="player-attire" class="kv-value"></div></div>
+              </div>
+            </div>
+            <div id="dynamic-roles-container"></div>
+          </div>
+        </div>
+      </div>
+
+      <div id="settings-overlay" class="settings-overlay">
+        <div class="settings-backdrop" onclick="toggleSettings()"></div>
+        <div class="settings-sheet">
+          <div class="sheet-header"><span>状态栏设置</span><button class="sheet-close" onclick="toggleSettings()"><span data-icon="times"></span></button></div>
+          <div class="sheet-body">
+            <div class="settings-item"><label>自动展开状态栏</label><input id="auto-expand-toggle" type="checkbox" onchange="onAutoExpandChange(this.checked)" /></div>
+            <div class="settings-item"><label>女性着装列数</label><select id="female-attire-cols-select" onchange="onFemaleAttireColsChange(this.value)"><option value="auto">自适应</option><option value="2">2列</option><option value="3">3列</option><option value="4">4列</option></select></div>
+            <div class="settings-item"><label>面板宽度(%)</label><input id="panel-width-input" type="range" min="40" max="100" onchange="onPanelWidthChange(this.value)" /></div>
+            <div class="settings-item"><label>内容高度(%)</label><input id="panel-height-input" type="range" min="40" max="100" onchange="onPanelHeightChange(this.value)" /></div>
+            <div class="settings-item"><label>文本大小(%)</label><input id="text-scale-input" type="range" min="80" max="140" onchange="onTextScaleChange(this.value)" /></div>
+            <div class="settings-item"><label>文本粗细</label><input id="text-weight-input" type="range" min="300" max="700" step="50" onchange="onTextWeightChange(this.value)" /></div>
+            <div class="settings-item"><label>文本对齐</label><select id="text-align-select" onchange="onTextAlignChange(this.value)"><option value="right">右对齐</option><option value="left">左对齐</option></select></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const ICONS = {
+        'user-circle': '<path d="M12 2.5a5.5 5.5 0 0 1 3.096 10.047A9.005 9.005 0 0 1 21 20.75a.75.75 0 1 1-1.498.088 7.502 7.502 0 0 0-15.004 0A.75.75 0 0 1 3 20.75a9.005 9.005 0 0 1 5.904-8.18A5.5 5.5 0 0 1 12 2.5ZM8 8a4 4 0 1 0 8 0 4 4 0 0 0-8 0Z"/>',
+        compress: '<path d="M4 8h4V4zM4 16h4v4zM20 8h-4V4zM20 16h-4v4z" />',
+        expand: '<path d="M4 4h4v4zM4 20h4v-4zM20 4h-4v4zM20 20h-4v-4z" />',
+        cog: '<path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.488.488 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54a.484.484 0 0 0-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.56-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.03-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>',
+        heart: '<path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>',
+        shirt: '<path d="M20.35 3.69l-3.61 0c-.34 1.31-1.52 2.25-2.92 2.25H9.68c-1.4 0-2.58-.94-2.92-2.25L3.65 3.69c-.27-.07-.55.06-.66.32L1.13 8.34c-.15.35-.03.76.29.98l2.52 1.71v8.86c0 .61.49 1.11 1.1 1.11h13.92c.61 0 1.1-.49 1.1-1.11v-8.86l2.52-1.71c.32-.22.44-.63.29-.98l-1.86-4.33c-.11-.26-.39-.39-.66-.32z"/>',
+        times: '<path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/>',
+        'chevron-down': '<path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>',
+        'chevron-up': '<path d="M7.41 15.41L12 10.83l4.59 4.58L18 14l-6-6-6 6 1.41 1.41z"/>',
+        'vcard-o': '<path d="M22 7H2v10h20V7zM4 9h16v6H4V9zm0-2h16V5H4v2zm0 12h16v-2H4v2z"/>',
+        user: '<path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>',
+        brain: '<path d="M12 9.5c.83 0 1.5.67 1.5 1.5s-.67 1.5-1.5 1.5-1.5-.67-1.5-1.5.67-1.5 1.5-1.5zM18 6h-1c-1.1 0-2 .9-2 2h-1c0-2.21 1.79-4 4-4V6zM10 6H9c0-2.21 1.79-4 4-4v2c-1.1 0-2 .9-2 2zm-4 0v2c-2.21 0-4 1.79-4 4 0 1.36.67 2.57 1.7 3.36C3.26 16.27 3 17.11 3 18c0 2.21 1.79 4 4 4h1c1.1 0 2-.9 2-2h-1c0 .55-.45 1-1 1H7c-1.1 0-2-.9-2-2 0-.65.32-1.23.81-1.61L6.59 15.5l-.78-.62C4.68 13.99 4 13.07 4 12c0-1.1.9-2 2-2V6zm11 8h1c2.21 0 4-1.79 4-4 0-2.21-1.79-4-4-4v2c1.1 0 2 .9 2 2 0 1.1-.9 2-2 2h-1v-2zm0 8v-2c1.1 0 2-.9 2-2 0-.65-.32-1.23-.81-1.61l-.78-.62.78-.62c1.13-1.14 1.81-2.06 1.81-3.15h2c0 2.21-1.79 4-4 4 0 .89-.26 1.73-.7 2.44.03.11.7.32.7 1.56H17zM14 20h-4v-2h4V20zm0-2v-3h-4v3H14z"/>',
+        ruler: '<path d="M2 6h20v12H2V6zm2 2v3h2V8h2v3h2V8h2v3h2V8h2v3h2V8h2v8H4V8z"/>',
+        male: '<path d="M9.5 11c1.93 0 3.5 1.57 3.5 3.5S11.43 18 9.5 18 6 16.43 6 14.5 7.57 11 9.5 11zm0 2c-.83 0-1.5.67-1.5 1.5S8.67 16 9.5 16s1.5-.67 1.5-1.5S10.33 13 9.5 13zm8.5-9h2v6h-2V6.41l-3.29 3.29C15.66 10.95 16 12.43 16 14c0 3.31-2.69 6-6 6s-6-2.69-6-6 2.69-6 6-6c1.57 0 3.05.34 4.3.95L17.59 6h-2.59V4zM10 18c-2.21 0-4-1.79-4-4s1.79-4 4-4 4 1.79 4 4-1.79 4-4 4z"/>',
+        bars: '<path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"/>',
+        lock: '<path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>',
+        tags: '<path d="M20 2H10c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 18H10V4h10v16zM18 6h-1c-.55 0-1 .45-1 1s.45 1 1 1 1-.45 1-1-.45-1-1-1z"/>',
+        'shopping-bag': '<path d="M18 6h-2c0-2.21-1.79-4-4-4S8 3.79 8 6H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6-2c1.1 0 2 .9 2 2h-4c0-1.1.9-2 2-2zm6 16H6V8h2v2c0 .55.45 1 1 1s1-.45 1-1V8h4v2c0 .55.45 1 1 1s1-.45 1-1V8h2v12z"/>',
+      };
+      function getIcon(n,c=''){return `<svg class="svg-icon ${c}" viewBox="0 0 24 24">${ICONS[n]||''}</svg>`;}
+      function replaceStaticIcons() { document.querySelectorAll('[data-icon]').forEach(el=>{const n=el.getAttribute('data-icon'); if(ICONS[n]) el.outerHTML=getIcon(n, el.className).replace('<svg', `<svg style="${el.getAttribute('style')||''}"`);}); }
+
+      let isCollapsed=false, statusData={}, lastContentHash='', _domTextCache=new Map(), _lastRoleStructureHash='';
+      
+      const FIELD_DEFS = {
+        player: [
+          {id:'player-name', l:'姓名', k:'读者角色'}, {id:'player-details', l:'详情', k:'读者角色'},
+          {id:'player-position', l:'当前位置', k:'当前位置'}, {id:'player-action', l:'当前动作', k:'当前动作'},
+          {id:'player-penis-status', l:'阴茎状态', k:'阴茎状态'}, {id:'player-penis-length', l:'阴茎长度', k:'阴茎长度'},
+          {id:'player-attire', l:'着装详情', k:'服饰'}, {id:'scene-location', l:'地点', k:'地点'},
+          {id:'scene-time', l:'时间', k:'时间'}, {id:'scene-weather', l:'天气', k:'天气'}
+        ],
+        role: [
+          {k:'name', l:'姓名', def:'号角色'}, {k:'details', l:'详情', def:'号角色'},
+          {k:'height', l:'身高', def:'号角色身高'}, {k:'weight', l:'体重', def:'号角色体重'},
+          {k:'cup', l:'罩杯', def:'号角色胸围'}, {k:'body-type', l:'体型', def:'号角色体型'},
+          {k:'appearance', l:'外貌概括', def:'号角色外貌概括'}, {k:'position', l:'当前位置', def:'号角色当前位置'},
+          {k:'action', l:'当前动作', def:'号角色当前动作'}, {k:'status', l:'状态', def:'号角色状态'},
+          {k:'personality', l:'性格', def:'号角色性格'}, {k:'mood', l:'情绪', def:'号角色情绪'},
+          {k:'attitude', l:'态度', def:'号角色态度'}, {k:'thought', l:'心语', def:'号角色心语'},
+          {k:'loved-one', l:'最爱之人', def:'号角色最爱之人'}, {k:'relatives', l:'亲属', def:'号角色亲属'},
+          {k:'sex-virginity', l:'初次性行为状态', def:'号角色初次性行为状态'},
+          {k:'sex-details', l:'性行为对象与体位', def:'号角色性行为对象与体位'},
+          {k:'heightweight', l:'身高/体重', def:'号角色身高/体重'}, {k:'attire-text', l:'服饰文本', def:'号角色服饰'}
+        ]
+      };
+
+      function switchTab(tab) {
+        document.querySelectorAll('.tab-button, .tab-content').forEach(el=>el.classList.remove('active'));
+        document.querySelector(`[data-tab="${tab}"]`)?.classList.add('active');
+        document.getElementById(tab)?.classList.add('active');
+      }
+      function toggleCollapse() {
+        const p = document.querySelector('.status-panel');
+        isCollapsed = !isCollapsed;
+        updateCollapseUI();
+        // Force reflow to fix rendering glitches
+        if(!isCollapsed) void p.offsetHeight;
+      }
+      function ensureExpanded() { if(isCollapsed){ isCollapsed=false; updateCollapseUI(); } }
+      function updateCollapseUI() {
+        const p = document.querySelector('.status-panel'), btn = document.querySelector('.control-btn[onclick="toggleCollapse()"]');
+        p?.classList.toggle('collapsed', isCollapsed);
+        if(btn) btn.innerHTML = getIcon(isCollapsed ? 'expand' : 'compress');
+      }
+      function toggleSettings() {
+        const o = document.getElementById('settings-overlay');
+        o?.classList.toggle('open');
+        if(o?.classList.contains('open')) {
+            ensureExpanded();
+            document.getElementById('auto-expand-toggle').checked = loadAutoExpandSetting();
+            document.getElementById('female-attire-cols-select').value = loadFemaleAttireCols();
+            document.getElementById('panel-width-input').value = loadPanelWidth();
+            document.getElementById('panel-height-input').value = loadPanelHeight();
+            document.getElementById('text-scale-input').value = loadTextScalePct();
+            document.getElementById('text-weight-input').value = loadTextWeight();
+            document.getElementById('text-align-select').value = loadTextAlign();
+        }
+      }
+      function toggleInfoBlock(btn) {
+        const body = btn.closest('.info-block')?.querySelector('.block-body');
+        if(body) { 
+            body.classList.toggle('collapsed'); 
+            btn.innerHTML = getIcon(body.classList.contains('collapsed') ? 'chevron-down' : 'chevron-up'); 
+        }
+      }
+      // Config Loaders
+      const ls = localStorage;
+      function loadAutoExpandSetting() { return ls.getItem('statusPanelAutoExpand') !== 'false'; }
+      function loadFemaleAttireCols() { const v=ls.getItem('femaleAttireCols'); return ['2','3','4'].includes(v)?v:'auto'; }
+      function loadPanelWidth() { return Math.max(40, Math.min(100, parseInt(ls.getItem('statusPanelMaxWidthPct')||'100'))); }
+      function loadPanelHeight() { return Math.max(40, Math.min(100, parseInt(ls.getItem('statusPanelContentMaxHeightPct')||'80'))); }
+      function loadTextScalePct() { return Math.max(80, Math.min(140, parseInt(ls.getItem('statusPanelTextScalePct')||'100'))); }
+      function loadTextWeight() { return Math.max(300, Math.min(700, parseInt(ls.getItem('statusPanelTextWeight')||'500'))); }
+      function loadTextAlign() { return ls.getItem('statusPanelTextAlign') === 'left' ? 'left' : 'right'; }
+      
+      // Config Appliers
+      function onAutoExpandChange(v) { ls.setItem('statusPanelAutoExpand', v); isCollapsed=!v; updateCollapseUI(); }
+      function onFemaleAttireColsChange(v) { ls.setItem('femaleAttireCols', v); applyFemaleAttireCols(); }
+      function onPanelWidthChange(v) { ls.setItem('statusPanelMaxWidthPct', v); applyPanelWidth(); }
+      function onPanelHeightChange(v) { ls.setItem('statusPanelContentMaxHeightPct', v); applyPanelHeight(); }
+      function onTextScaleChange(v) { ls.setItem('statusPanelTextScalePct', v); applyTextScale(); }
+      function onTextWeightChange(v) { ls.setItem('statusPanelTextWeight', v); applyTextWeight(); }
+      function onTextAlignChange(v) { ls.setItem('statusPanelTextAlign', v); applyTextAlign(); }
+      
+      function applyFemaleAttireCols() { const p=document.querySelector('.status-panel'); if(!p)return; p.classList.remove('attire-cols-2','attire-cols-3','attire-cols-4'); const v=loadFemaleAttireCols(); if(v!=='auto') p.classList.add(`attire-cols-${v}`); }
+      function applyPanelWidth() { const p=document.querySelector('.status-panel'), w=loadPanelWidth(); if(!p)return; p.style.maxWidth='none'; if(w>=98){p.classList.add('fullbleed');p.style.width=w+'vw';}else{p.classList.remove('fullbleed');p.style.width=w+'%';} }
+      function applyPanelHeight() { document.querySelector('.status-panel')?.style.setProperty('--content-max-height', loadPanelHeight()+'vh'); }
+      function applyTextScale() { document.querySelector('.status-panel')?.style.setProperty('--font-mult', loadTextScalePct()/100); }
+      function applyTextWeight() { document.querySelector('.status-panel')?.style.setProperty('--text-weight', loadTextWeight()); }
+      function applyTextAlign() { document.querySelector('.status-panel')?.style.setProperty('--text-align', loadTextAlign()); }
+      function applyStartupCollapseState() { isCollapsed = !loadAutoExpandSetting(); updateCollapseUI(); }
+
+      // Core Logic
+      function getFirstMappedValue(id, def) {
+        const parts = String(def||'').split('|').map(s=>s.trim()).filter(s=>s.length);
+        for(let k of parts) { const v = statusData[k]; if(v && (typeof v==='string'?v.trim():true)) return v; }
+        return '';
+      }
+      function setText(id, val) {
+        const s = val||''; if(_domTextCache.get(id)===s) return;
+        const el = document.getElementById(id); if(el) { _domTextCache.set(id,s); el.textContent=s; }
+      }
+      function setTextFromMap(id, def) { setText(id, getFirstMappedValue(id, def)); }
+      function setTextClean(id, def) { setText(id, (getFirstMappedValue(id, def)||'').replace(/（[^）]*）|\([^)]*\)/g, '').trim()); }
+      
+      function getActiveRoleIndex() {
+        const active = document.querySelector('.tab-content.active');
+        if(!active) return null;
+        if(active.id === 'player') return -1;
+        const m = active.id.match(/^role(\d+)/);
+        return m ? parseInt(m[1]) : null;
+      }
+      function getRoleName(r) { 
+        if(!r) return ''; const i=Math.min(...[r.indexOf('，'), r.indexOf(',')].filter(x=>x>=0));
+        return (i>=0 ? r.slice(0,i) : r).trim();
+      }
+      function getRoleGender(r) { const p=(r||'').split(/[，,]/); const g=(p[2]||'').trim(); return g.includes('男')?'男':(g.includes('女')?'女':''); }
+
+      function renderStatusData() {
+        setTextFromMap('scene-location','地点'); setTextFromMap('scene-time','时间'); setTextFromMap('scene-weather','天气');
+        const pr = getFirstMappedValue('player-name','读者角色')||'';
+        setText('player-name', pr.split('|')[0]||''); setText('player-details', pr.split('|').slice(1).join(' | '));
+        ['position','action','penis-status','penis-length','attire'].forEach(k => setTextFromMap(`player-${k}`, FIELD_DEFS.player.find(f=>f.id===`player-${k}`)?.k));
+        buildRolesUI();
+      }
+
+      function renderKvPairs(items, prefix) {
+        return items.map(s => {
+            const [key, label] = s.split(':');
+            return `<div class="kv-pair"><span class="kv-label">${label}：</span><span id="${prefix}-${key}" class="kv-value"></span></div>`;
+        }).join('');
+      }
+
+      function buildRolesUI() {
+        const tCon = document.getElementById('tabs-container'), rCon = document.getElementById('dynamic-roles-container');
+        if(!tCon || !rCon) return;
+        const roles = [];
+        for(let i=1; i<=20; i++) {
+            if(!statusData[`${i}号角色`] && !statusData[`${i}号角色当前位置`] && !statusData[`${i}号角色状态`]) break;
+            const raw = statusData[`${i}号角色`]||'';
+            roles.push({i, name: getRoleName(raw)||`角色${i}`, raw, gender: getRoleGender(raw)});
+        }
+        const hash = roles.map(r=>`${r.i}:${r.name}:${r.gender}`).join('|');
+        if(hash === _lastRoleStructureHash && tCon.firstElementChild) return;
+        _lastRoleStructureHash = hash; _domTextCache.clear();
+
+        tCon.innerHTML = `<button class="tab-button ${roles.length?'':'active'}" data-tab="player" onclick="switchTab('player')">角色状态</button>` + 
+          roles.map((r,x) => `<button class="tab-button ${x===0?'active':''}" data-tab="role${r.i}" onclick="switchTab('role${r.i}')">${r.name}</button>`).join('');
+        
+        rCon.innerHTML = roles.map((r,x) => {
+            const isMale = r.gender==='男';
+            const roleId = `role${r.i}`;
+            const headerHtml = `
+              <div class="compact-role-header${!isMale ? ' attached-bottom' : ''}">
+                <div class="crh-left">
+                  <div class="crh-name-row">
+                    ${getIcon('user-circle', 'crh-icon')}
+                    <div id="${roleId}-name" class="crh-name"></div>
+                  </div>
+                  <div id="${roleId}-details" class="crh-details"></div>
+                </div>
+                ${!isMale ? `<div class="crh-divider"></div>
+                <div class="crh-right">
+                  <div class="crh-stats-row">
+                    ${['height:身高','weight:体重','cup:罩杯','body-type:体型'].map(s=>{const[k,l]=s.split(':');return `<div class="crh-stat-item"><div id="${roleId}-${k}" class="crh-stat-val"></div><div class="crh-stat-lbl">${l}</div></div>`}).join('')}
+                  </div>
+                  <div class="crh-appearance"><span class="crh-appearance-label">外貌：</span><span id="${roleId}-appearance"></span></div>
+                </div>` : ''}
+              </div>`;
+
+            let contentHtml = '';
+            if (!isMale) {
+                contentHtml = `
+                  <div class="info-block attached-top" style="margin-bottom:12px">
+                    <h3>${getIcon('vcard-o')} 状态综览 <button class="block-toggle" onclick="toggleInfoBlock(this)">${getIcon('chevron-up')}</button></h3>
+                    <div class="block-body">
+                      <div class="merged-content">
+                        <div class="merged-section"><div id="${roleId}-attire" class="attire-grid"></div></div>
+                        <div class="merged-section">
+                          ${renderKvPairs(['personality:性格','mood:情绪','attitude:态度'], roleId)}
+                          <div class="kv-pair"><span class="kv-label">心语：</span><span id="${roleId}-thought" class="kv-value thought"></span></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="info-grid">
+                    <div class="info-block"><h3>${getIcon('user')} 状态信息 <button class="block-toggle" onclick="toggleInfoBlock(this)">${getIcon('chevron-up')}</button></h3>
+                      <div class="block-body">${renderKvPairs(['position:当前位置','action:当前动作','status:状态'], roleId)}</div>
+                    </div>
+                    <div class="info-block"><h3>${getIcon('heart')} 背景关系 <button class="block-toggle" onclick="toggleInfoBlock(this)">${getIcon('chevron-up')}</button></h3>
+                      <div class="block-body">${renderKvPairs(['loved-one:最爱之人','relatives:亲属','sex-virginity:初次性行为状态','sex-details:性行为对象与体位'], roleId)}</div>
+                    </div>
+                  </div>`;
+            } else {
+                contentHtml = `
+                  <div class="info-grid">
+                    <div class="info-block"><h3>${getIcon('brain')} 精神状态 <button class="block-toggle" onclick="toggleInfoBlock(this)">${getIcon('chevron-up')}</button></h3>
+                      <div class="block-body">
+                        ${renderKvPairs(['personality:性格','mood:情绪','attitude:态度'], roleId)}
+                        <div class="kv-pair"><span class="kv-label">心语：</span><span id="${roleId}-thought" class="kv-value thought"></span></div>
+                      </div>
+                    </div>
+                    <div class="info-block"><h3>${getIcon('user')} 状态信息 <button class="block-toggle" onclick="toggleInfoBlock(this)">${getIcon('chevron-up')}</button></h3>
+                      <div class="block-body">
+                        ${renderKvPairs(['position:当前位置','action:当前动作','status:状态'], roleId)}
+                        <h3 style="margin-top:8px; border-bottom:1px solid rgba(74,95,193,0.2); padding-bottom:4px; margin-bottom:6px; font-size:0.9em; color:var(--accent-color)">${getIcon('ruler')} 基本数据</h3>
+                        <div class="kv-pair"><span class="kv-label">身高/体重：</span><span id="${roleId}-heightweight" class="kv-value"></span></div>
+                        <div class="kv-pair"><span class="kv-label">体型：</span><span id="${roleId}-body-type" class="kv-value"></span></div>
+                      </div>
+                    </div>
+                    <div class="info-block"><h3>${getIcon('male')} 服饰与生理 <button class="block-toggle" onclick="toggleInfoBlock(this)">${getIcon('chevron-up')}</button></h3>
+                      <div class="block-body">
+                        <div class="kv-pair"><span class="kv-label">服饰：</span><span id="${roleId}-attire-text" class="kv-value"></span></div>
+                        <div class="kv-pair"><span class="kv-label">阴茎状态：</span><span id="${roleId}-penis-status" class="kv-value"></span></div>
+                        <div class="kv-pair"><span class="kv-label">阴茎长度：</span><span id="${roleId}-penis-length" class="kv-value"></span></div>
+                      </div>
+                    </div>
+                    <div class="info-block"><h3>${getIcon('heart')} 背景关系 <button class="block-toggle" onclick="toggleInfoBlock(this)">${getIcon('chevron-up')}</button></h3>
+                      <div class="block-body">${renderKvPairs(['loved-one:最爱之人','relatives:亲属','sex-virginity:初次性行为状态','sex-details:性行为对象与体位'], roleId)}</div>
+                    </div>
+                  </div>`;
+            }
+            return `<div id="${roleId}" class="tab-content ${x===0?'active':''}">${headerHtml}${contentHtml}</div>`;
+        }).join('');
+        
+        if(roles.length) document.getElementById('player').classList.remove('active');
+        roles.forEach(r => renderRoleContent(r.i, r.gender));
+      }
+
+      function renderRoleContent(i, gender) {
+        const raw = getFirstMappedValue(`role${i}-name`, `${i}号角色`)||'';
+        setText(`role${i}-name`, getRoleName(raw)||`角色${i}`);
+        setText(`role${i}-details`, raw?raw.split(/[，,]/).slice(1).join(' | '):'');
+        
+        const isMale = gender === '男';
+        if(isMale) {
+            const h = getFirstMappedValue(`role${i}-height`, `${i}号角色身高`), w = getFirstMappedValue(`role${i}-weight`, `${i}号角色体重`);
+            let hw = (h&&w) ? `${h} / ${w}` : (h||w||'');
+            const hwc = getFirstMappedValue(`role${i}-heightweight`, `${i}号角色身高/体重`);
+            if(!hw && hwc) hw=hwc;
+            setText(`role${i}-heightweight`, hw);
+            ['body-type','position','action','status','personality','mood','attitude','thought','attire-text','penis-status','penis-length','loved-one','sex-virginity','sex-details'].forEach(k=>setTextFromMap(`role${i}-${k}`, `${i}${FIELD_DEFS.role.find(f=>f.k===k)?.def}`));
+            const rel = getFirstMappedValue(`role${i}-relatives`, `${i}号角色亲属`);
+            setText(`role${i}-relatives`, rel || statusData['亲属'] || '');
+        } else {
+            ['height','weight','cup','body-type'].forEach(k=>setTextClean(`role${i}-${k}`, `${i}${FIELD_DEFS.role.find(f=>f.k===k)?.def}`));
+            ['appearance','position','action','status','personality','mood','attitude','thought','loved-one','sex-virginity','sex-details'].forEach(k=>setTextFromMap(`role${i}-${k}`, `${i}${FIELD_DEFS.role.find(f=>f.k===k)?.def}`));
+            const rel = getFirstMappedValue(`role${i}-relatives`, `${i}号角色亲属`);
+            setText(`role${i}-relatives`, rel || statusData['亲属'] || '');
+            renderRoleAttire(i);
+        }
+      }
+
+      function renderRoleAttire(i) {
+        const g = document.getElementById(`role${i}-attire`); if(!g) return;
+        const items = [['上衣','user'],['内衣','heart'],['裤子/裙子','bars'],['内裤','lock'],['袜子','tags'],['鞋子','shopping-bag']];
+        g.innerHTML = items.map(([k,ico]) => {
+            let v = statusData[`${i}号角色${k}`];
+            if (!v && k === '裤子/裙子') {
+                v = statusData[`${i}号角色裤子`] || statusData[`${i}号角色裙子`];
+            }
+            // Always render the cell even if empty to maintain grid structure, or render empty cell
+            return `<div class="attire-cell">
+              <div class="attire-cell-label">${k}</div>
+              <div class="attire-cell-value">${v || '-'}</div>
+            </div>`;
+        }).join('');
+      }
+
+      // Parser & Observer
+      function getCurrentMessage() {
+        if(typeof getCurrentMessageId!=='function'||typeof getChatMessages!=='function') return null;
+        const d=getChatMessages(getCurrentMessageId()); return Array.isArray(d)?d[0]:d;
+      }
+      function hashStr(s) { let h=0; for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))|0; return h.toString(); }
+      function parseStatusContent(c) {
+        const d={}; c.split('\n').forEach(l=>{ const m=l.match(/^(.+?)：(.+)$/); if(m) d[m[1].trim()]=m[2].trim(); }); return d;
+      }
+
+      let _statusParseTimer=null, _isObserving=false;
+      function execParseStatusBlock() {
+        let content='';
+        try {
+            const mObj = getCurrentMessage(), msg = (mObj && typeof mObj.message==='string') ? mObj.message : '';
+            if(msg) {
+                const win = msg.length>5000 ? msg.slice(-5000) : msg;
+                const m = win.match(/<(Status|StatusBlock|Status_block)>\s*([\s\S]*?)\s*<\/\1>/i);
+                if(m) content = m[2];
+            }
+        } catch(e){}
+        if(!content) { try{ const t=document.querySelectorAll('Status, StatusBlock, Status_block'); if(t.length) content=t[t.length-1].innerHTML; }catch(e){} }
+        
+        if(content) {
+            const norm = content.replace(/<\s*br\s*\/?>/gi, '\n').trim(), h = hashStr(norm);
+            if(h === lastContentHash) return;
+            lastContentHash = h; statusData = parseStatusContent(norm);
+            renderStatusData(); switchTab('player');
+        }
+      }
+
+      function initObserver() {
+        if(_isObserving) return;
+        const evtSrc = window.eventSource || (window.parent ? window.parent.eventSource : null);
+        if(evtSrc && typeof evtSrc.on==='function') {
+            console.log('Status Bar: Connected to Event Source');
+            const trig = () => setTimeout(execParseStatusBlock, 50);
+            ['generation_ended','message_updated','chat_id_changed','message_sent'].forEach(e => evtSrc.on(e, trig));
+            _isObserving = true; return;
+        }
+        const chatRoot = document.getElementById('chat') || document.querySelector('.mes_text') || document.body;
+        const obs = new MutationObserver(m => {
+            if(_statusParseTimer) clearTimeout(_statusParseTimer);
+            _statusParseTimer = setTimeout(execParseStatusBlock, 500);
+        });
+        obs.observe(chatRoot, { childList: true, subtree: true, characterData: chatRoot!==document.body });
+        _isObserving = true;
+      }
+
+      document.addEventListener('DOMContentLoaded', () => {
+        replaceStaticIcons();
+        applyStartupCollapseState(); applyFemaleAttireCols();
+        applyPanelWidth(); applyPanelHeight(); applyTextScale(); applyTextWeight(); applyTextAlign();
+        execParseStatusBlock(); initObserver();
+        document.addEventListener('keydown', e => {
+            if(e.key==='Escape') { 
+                const s=document.getElementById('settings-overlay'); if(s?.classList.contains('open')) toggleSettings();
+            }
+        });
+      });
+    </script>
+  </body>
+</html>
