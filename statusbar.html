@@ -231,9 +231,7 @@
       .kv-value.thought { font-style: italic; color: #ffc4bd; font-family: "Georgia", serif; letter-spacing: 0.5px; }
       
       .attire-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-      .status-panel.attire-cols-2 .tab-content .attire-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .status-panel.attire-cols-3 .tab-content .attire-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-      .status-panel.attire-cols-4 .tab-content .attire-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      /* Removed dynamic attire cols classes as per user request for fixed layout */
       
       .attire-cell {
         background: rgba(0,0,0,0.1);
@@ -271,12 +269,35 @@
       }
       .compact-role-header.has-content-below { border-radius: 12px 12px 0 0; border-bottom: none; }
       
+      /* Horizontal Stats Grid */
+      .crh-stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 12px;
+        width: 100%;
+        margin-bottom: 8px;
+      }
+      .crh-stats-grid-item {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid rgba(255,255,255,0.05);
+        border-radius: 8px;
+        padding: 8px 4px;
+        text-align: center;
+      }
+      .crh-stats-grid-item .label {
+        font-size: 0.75rem; color: rgba(255,255,255,0.5); text-transform: uppercase; margin-bottom: 4px;
+      }
+      .crh-stats-grid-item .value {
+        font-size: 1rem; color: #fff; font-weight: 600; font-family: 'Orbitron', sans-serif;
+      }
+      
       .crh-top-row { display: flex; align-items: center; width: 100%; }
       .crh-bottom-row { 
-        display: flex; gap: 16px; margin-top: 12px; padding-top: 12px; 
+        display: flex; flex-direction: column; gap: 12px; margin-top: 12px; padding-top: 12px; 
         width: 100%; box-sizing: border-box;
       }
-      .crh-section { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+      .crh-section { width: 100%; display: flex; flex-direction: column; gap: 4px; }
       .crh-section-title { 
         color: var(--accent-color); font-weight: 600; font-size: 0.95rem; 
         margin-bottom: 8px; display: flex; align-items: center; gap: 8px; 
@@ -330,13 +351,37 @@
       }
       .crh-appearance-label { font-weight: bold; color: var(--accent-color); margin-right: 6px; font-style: normal; }
 
+      /* Integrated Extended Info */
+      .crh-extended-info {
+        border-top: 1px solid rgba(255,255,255,0.1);
+        margin-top: 12px;
+        padding-top: 12px;
+        width: 100%;
+      }
+      .info-grid-integrated {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 16px;
+      }
+      .integrated-section {
+        display: flex; flex-direction: column; gap: 4px;
+      }
+      .integrated-section h3 {
+        font-size: 0.9rem;
+        color: var(--accent-color);
+        margin: 0 0 8px 0;
+        display: flex; align-items: center; gap: 6px;
+        opacity: 0.9; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;
+      }
+      .integrated-section h3 svg { width: 14px; height: 14px; }
+
       /* Mobile Responsive */
       @media (max-width: 768px) {
         body { padding: 10px; }
         .status-panel.fullbleed { width: 100vw; }
         .info-grid { grid-template-columns: 1fr; gap: 12px; }
         .merged-content { flex-direction: column; gap: 16px; }
-        .attire-grid { grid-template-columns: repeat(2, 1fr); }
+        .attire-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
       }
 
       @media (max-width: 600px) {
@@ -362,7 +407,14 @@
         .crh-stat-val { font-size: 0.95rem !important; }
         .crh-stat-lbl { font-size: 0.75rem !important; margin-top: 2px !important; }
         
-        .header-info { justify-content: center; gap: 8px; }
+        .header-info { justify-content: center; gap: 6px; flex-wrap: wrap; align-content: center; }
+        .info-unit { display: inline-flex; align-items: center; gap: 2px; }
+        .desktop-only { display: none; }
+        
+        .unit-loc { order: 1; }
+        .unit-weather { order: 2; margin-left: 4px; }
+        .unit-time { order: 3; flex-basis: 100%; justify-content: center; margin-top: 2px; }
+        .weather-label { display: none; }
       }
       
       @media (max-width: 480px) {
@@ -382,7 +434,7 @@
         .kv-pair { padding: 1px 0; font-size: 0.75rem; }
         .kv-label { font-size: 0.75rem; }
         
-        .attire-grid { grid-template-columns: 1fr; gap: 4px; }
+        .attire-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; }
         .attire-cell { padding: 4px 6px; }
         .attire-cell-label { font-size: 0.65rem; margin-bottom: 2px; }
         .attire-cell-value { font-size: 0.75rem; }
@@ -402,9 +454,11 @@
           <button class="control-btn" onclick="toggleSettings()" title="设置"><span data-icon="cog"></span></button>
         </div>
         <div class="header-info">
-          <span class="kv-label">地点：</span><span id="scene-location" class="kv-value"></span><span class="sep">|</span>
-          <span class="kv-label">时间：</span><span id="scene-time" class="kv-value"></span><span class="sep">|</span>
-          <span class="kv-label">天气：</span><span id="scene-weather" class="kv-value"></span>
+          <span class="info-unit unit-loc"><span class="kv-label">地点：</span><span id="scene-location" class="kv-value"></span></span>
+          <span class="sep desktop-only">|</span>
+          <span class="info-unit unit-time"><span class="kv-label">时间：</span><span id="scene-time" class="kv-value"></span></span>
+          <span class="sep desktop-only">|</span>
+          <span class="info-unit unit-weather"><span class="kv-label weather-label">天气：</span><span id="scene-weather" class="kv-value"></span></span>
         </div>
       </div>
 
@@ -457,7 +511,6 @@
           <div class="sheet-header"><span>状态栏设置</span><button class="sheet-close" onclick="toggleSettings()"><span data-icon="times"></span></button></div>
           <div class="sheet-body">
             <div class="settings-item"><label>自动展开状态栏</label><input id="auto-expand-toggle" type="checkbox" onchange="onAutoExpandChange(this.checked)" /></div>
-            <div class="settings-item"><label>女性着装列数</label><select id="female-attire-cols-select" onchange="onFemaleAttireColsChange(this.value)"><option value="auto">自适应</option><option value="2">2列</option><option value="3">3列</option><option value="4">4列</option></select></div>
             <div class="settings-item"><label>面板宽度(%)</label><input id="panel-width-input" type="range" min="40" max="100" onchange="onPanelWidthChange(this.value)" /></div>
             <div class="settings-item"><label>文本大小(%)</label><input id="text-scale-input" type="range" min="80" max="140" onchange="onTextScaleChange(this.value)" /></div>
             <div class="settings-item"><label>文本粗细</label><input id="text-weight-input" type="range" min="300" max="700" step="50" onchange="onTextWeightChange(this.value)" /></div>
@@ -540,7 +593,6 @@
         if(o?.classList.contains('open')) {
             ensureExpanded();
             document.getElementById('auto-expand-toggle').checked = loadAutoExpandSetting();
-            document.getElementById('female-attire-cols-select').value = loadFemaleAttireCols();
             document.getElementById('panel-width-input').value = loadPanelWidth();
             document.getElementById('text-scale-input').value = loadTextScalePct();
             document.getElementById('text-weight-input').value = loadTextWeight();
@@ -557,7 +609,6 @@
       // Config Loaders
       const ls = localStorage;
       function loadAutoExpandSetting() { return ls.getItem('statusPanelAutoExpand') !== 'false'; }
-      function loadFemaleAttireCols() { const v=ls.getItem('femaleAttireCols'); return ['2','3','4'].includes(v)?v:'auto'; }
       function loadPanelWidth() { return Math.max(40, Math.min(100, parseInt(ls.getItem('statusPanelMaxWidthPct')||'100'))); }
       function loadTextScalePct() { return Math.max(80, Math.min(140, parseInt(ls.getItem('statusPanelTextScalePct')||'100'))); }
       function loadTextWeight() { return Math.max(300, Math.min(700, parseInt(ls.getItem('statusPanelTextWeight')||'500'))); }
@@ -565,13 +616,11 @@
       
       // Config Appliers
       function onAutoExpandChange(v) { ls.setItem('statusPanelAutoExpand', v); isCollapsed=!v; updateCollapseUI(); }
-      function onFemaleAttireColsChange(v) { ls.setItem('femaleAttireCols', v); applyFemaleAttireCols(); }
       function onPanelWidthChange(v) { ls.setItem('statusPanelMaxWidthPct', v); applyPanelWidth(); }
       function onTextScaleChange(v) { ls.setItem('statusPanelTextScalePct', v); applyTextScale(); }
       function onTextWeightChange(v) { ls.setItem('statusPanelTextWeight', v); applyTextWeight(); }
       function onTextAlignChange(v) { ls.setItem('statusPanelTextAlign', v); applyTextAlign(); }
       
-      function applyFemaleAttireCols() { const p=document.querySelector('.status-panel'); if(!p)return; p.classList.remove('attire-cols-2','attire-cols-3','attire-cols-4'); const v=loadFemaleAttireCols(); if(v!=='auto') p.classList.add(`attire-cols-${v}`); }
       function applyPanelWidth() { const p=document.querySelector('.status-panel'), w=loadPanelWidth(); if(!p)return; p.style.maxWidth='none'; if(w>=98){p.classList.add('fullbleed');p.style.width=w+'vw';}else{p.classList.remove('fullbleed');p.style.width=w+'%';} }
       function applyTextScale() { document.querySelector('.status-panel')?.style.setProperty('--font-mult', loadTextScalePct()/100); }
       function applyTextWeight() { document.querySelector('.status-panel')?.style.setProperty('--text-weight', loadTextWeight()); }
@@ -646,8 +695,9 @@
         rCon.innerHTML = roles.map((r,x) => {
             const isMale = r.gender==='男';
             const roleId = `role${r.i}`;
-            const headerHtml = `
-              <div class="compact-role-header animate-entry${!isMale ? ' has-content-below' : ''}">
+            
+            return `<div id="${roleId}" class="tab-content ${x===0?'active':''}">
+              <div class="compact-role-header animate-entry">
                 <div class="crh-top-row">
                   <div class="crh-left">
                     <div class="crh-name-row">
@@ -656,69 +706,65 @@
                     </div>
                     <div id="${roleId}-details" class="crh-details"></div>
                   </div>
-                  ${!isMale ? `<div class="crh-divider"></div>
+                  <div class="crh-divider"></div>
                   <div class="crh-right">
                     <div class="crh-stats-row">
-                      ${['height:身高','weight:体重','cup:罩杯','body-type:体型'].map(s=>{const[k,l]=s.split(':');return `<div class="crh-stat-item"><div id="${roleId}-${k}" class="crh-stat-val"></div><div class="crh-stat-lbl">${l}</div></div>`}).join('')}
-                    </div>
-                    <div class="crh-appearance"><span class="crh-appearance-label">外貌：</span><span id="${roleId}-appearance"></span></div>
-                  </div>` : ''}
-                </div>
-              </div>`;
-
-            let contentHtml = '';
-            if (!isMale) {
-                contentHtml = `
-                  <div class="info-block animate-entry attached-top" style="margin-bottom:12px">
-                    <h3>${getIcon('vcard-o')} 状态综览 <button class="block-toggle" onclick="toggleInfoBlock(this)">${getIcon('chevron-up')}</button></h3>
-                    <div class="block-body">
-                      <div class="merged-content">
-                        <div class="merged-section"><div id="${roleId}-attire" class="attire-grid"></div></div>
-                        <div class="merged-section">
-                          ${renderKvPairs(['personality:性格','mood:情绪','attitude:态度'], roleId)}
-                          <div class="kv-pair"><span class="kv-label">心语：</span><span id="${roleId}-thought" class="kv-value thought"></span></div>
-                        </div>
-                      </div>
+                      <div class="crh-stat-item"><div class="crh-stat-val" style="font-size: 1.1rem; color: var(--accent-color); order: 1;">当前位置</div><div id="${roleId}-position" class="crh-stat-lbl" style="font-size: 0.9rem; color: var(--text-primary); text-transform: none; margin-top:4px; font-weight: 400; letter-spacing: 0; order: 2;"></div></div>
+                      <div class="crh-stat-item"><div class="crh-stat-val" style="font-size: 1.1rem; color: var(--accent-color); order: 1;">当前动作</div><div id="${roleId}-action" class="crh-stat-lbl" style="font-size: 0.9rem; color: var(--text-primary); text-transform: none; margin-top:4px; font-weight: 400; letter-spacing: 0; order: 2;"></div></div>
+                      <div class="crh-stat-item"><div class="crh-stat-val" style="font-size: 1.1rem; color: var(--accent-color); order: 1;">状态</div><div id="${roleId}-status" class="crh-stat-lbl" style="font-size: 0.9rem; color: var(--text-primary); text-transform: none; margin-top:4px; font-weight: 400; letter-spacing: 0; order: 2;"></div></div>
                     </div>
                   </div>
-                  <div class="info-grid">
-                    <div class="info-block animate-entry"><h3>${getIcon('user')} 状态信息 <button class="block-toggle" onclick="toggleInfoBlock(this)">${getIcon('chevron-up')}</button></h3>
-                      <div class="block-body">${renderKvPairs(['position:当前位置','action:当前动作','status:状态'], roleId)}</div>
+                </div>
+                
+                <div class="crh-bottom-row">
+                  <div class="crh-section">
+                    ${isMale ? 
+                      `<div class="crh-stats-grid">
+                         <div class="crh-stats-grid-item"><div class="label">身高/体重</div><div id="${roleId}-heightweight" class="value"></div></div>
+                         <div class="crh-stats-grid-item"><div class="label">体型</div><div id="${roleId}-body-type" class="value"></div></div>
+                         <div class="crh-stats-grid-item"><div class="label">阴茎状态</div><div id="${roleId}-penis-status" class="value"></div></div>
+                         <div class="crh-stats-grid-item"><div class="label">阴茎长度</div><div id="${roleId}-penis-length" class="value"></div></div>
+                       </div>` 
+                      : 
+                      `<div class="crh-stats-grid">
+                         <div class="crh-stats-grid-item"><div class="label">身高</div><div id="${roleId}-height" class="value"></div></div>
+                         <div class="crh-stats-grid-item"><div class="label">体重</div><div id="${roleId}-weight" class="value"></div></div>
+                         <div class="crh-stats-grid-item"><div class="label">罩杯</div><div id="${roleId}-cup" class="value"></div></div>
+                         <div class="crh-stats-grid-item"><div class="label">体型</div><div id="${roleId}-body-type" class="value"></div></div>
+                       </div>`
+                    }
+                  </div>
+                  <div class="crh-section">
+                    ${isMale ? 
+                       `<div class="kv-pair" style="border-bottom: none; padding: 4px 0;">
+                            <span class="kv-label" style="align-self: flex-start; margin-top: 2px;">着装：</span>
+                            <span id="${roleId}-attire-text" class="kv-value" style="text-align: left; padding-left: 8px;"></span>
+                        </div>`
+                       :
+                       `<div id="${roleId}-attire" class="attire-grid"></div>
+                        <div class="kv-pair" style="border-bottom: none; margin-top: 8px; padding: 4px 0;">
+                            <span class="kv-label" style="align-self: flex-start; margin-top: 2px;">外貌：</span>
+                            <span id="${roleId}-appearance" class="kv-value" style="text-align: left; padding-left: 8px;"></span>
+                        </div>`
+                    }
+                  </div>
+                </div>
+
+                <div class="crh-extended-info">
+                  <div class="info-grid-integrated">
+                    <div class="integrated-section">
+                      <h3>${getIcon('brain')} 精神状态</h3>
+                      ${renderKvPairs(['personality:性格','mood:情绪','attitude:态度'], roleId)}
+                      <div class="kv-pair"><span class="kv-label">心语：</span><span id="${roleId}-thought" class="kv-value thought"></span></div>
                     </div>
-                    <div class="info-block animate-entry"><h3>${getIcon('heart')} 背景关系 <button class="block-toggle" onclick="toggleInfoBlock(this)">${getIcon('chevron-up')}</button></h3>
-                      <div class="block-body">${renderKvPairs(['loved-one:最爱之人','relatives:亲属','sex-virginity:初次性行为状态','sex-details:性行为对象与体位'], roleId)}</div>
+                    <div class="integrated-section">
+                      <h3>${getIcon('heart')} 背景关系</h3>
+                      ${renderKvPairs(['loved-one:最爱之人','relatives:亲属','sex-virginity:初次性行为状态','sex-details:性行为对象与体位'], roleId)}
                     </div>
-                  </div>`;
-            } else {
-                contentHtml = `
-                  <div class="info-grid">
-                    <div class="info-block animate-entry"><h3>${getIcon('brain')} 精神状态 <button class="block-toggle" onclick="toggleInfoBlock(this)">${getIcon('chevron-up')}</button></h3>
-                      <div class="block-body">
-                        ${renderKvPairs(['personality:性格','mood:情绪','attitude:态度'], roleId)}
-                        <div class="kv-pair"><span class="kv-label">心语：</span><span id="${roleId}-thought" class="kv-value thought"></span></div>
-                      </div>
-                    </div>
-                    <div class="info-block animate-entry"><h3>${getIcon('user')} 状态信息 <button class="block-toggle" onclick="toggleInfoBlock(this)">${getIcon('chevron-up')}</button></h3>
-                      <div class="block-body">
-                        ${renderKvPairs(['position:当前位置','action:当前动作','status:状态'], roleId)}
-                        <h3 style="margin-top:8px; border-bottom:1px solid rgba(74,95,193,0.2); padding-bottom:4px; margin-bottom:6px; font-size:0.9em; color:var(--accent-color)">${getIcon('ruler')} 基本数据</h3>
-                        <div class="kv-pair"><span class="kv-label">身高/体重：</span><span id="${roleId}-heightweight" class="kv-value"></span></div>
-                        <div class="kv-pair"><span class="kv-label">体型：</span><span id="${roleId}-body-type" class="kv-value"></span></div>
-                      </div>
-                    </div>
-                    <div class="info-block animate-entry"><h3>${getIcon('male')} 服饰与生理 <button class="block-toggle" onclick="toggleInfoBlock(this)">${getIcon('chevron-up')}</button></h3>
-                      <div class="block-body">
-                        <div class="kv-pair"><span class="kv-label">服饰：</span><span id="${roleId}-attire-text" class="kv-value"></span></div>
-                        <div class="kv-pair"><span class="kv-label">阴茎状态：</span><span id="${roleId}-penis-status" class="kv-value"></span></div>
-                        <div class="kv-pair"><span class="kv-label">阴茎长度：</span><span id="${roleId}-penis-length" class="kv-value"></span></div>
-                      </div>
-                    </div>
-                    <div class="info-block animate-entry"><h3>${getIcon('heart')} 背景关系 <button class="block-toggle" onclick="toggleInfoBlock(this)">${getIcon('chevron-up')}</button></h3>
-                      <div class="block-body">${renderKvPairs(['loved-one:最爱之人','relatives:亲属','sex-virginity:初次性行为状态','sex-details:性行为对象与体位'], roleId)}</div>
-                    </div>
-                  </div>`;
-            }
-            return `<div id="${roleId}" class="tab-content ${x===0?'active':''}">${headerHtml}${contentHtml}</div>`;
+                  </div>
+                </div>
+              </div>
+            </div>`;
         }).join('');
         
         if(roles.length) document.getElementById('player').classList.remove('active');
@@ -829,7 +875,7 @@
 
       const initApp = () => {
         replaceStaticIcons();
-        applyStartupCollapseState(); applyFemaleAttireCols();
+        applyStartupCollapseState();
         applyPanelWidth(); applyTextScale(); applyTextWeight(); applyTextAlign();
         execParseStatusBlock(); initObserver();
         document.addEventListener('keydown', e => {
