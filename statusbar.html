@@ -687,6 +687,7 @@
       let _statusParseTimer=null, _isObserving=false;
       function execParseStatusBlock() {
         let content='';
+        if(window.STATUS_RAW_DATA) content = window.STATUS_RAW_DATA;
         try {
             const mObj = getCurrentMessage(), msg = (mObj && typeof mObj.message==='string') ? mObj.message : '';
             if(msg) {
