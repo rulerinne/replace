@@ -676,8 +676,14 @@
 
       // Parser & Observer
       function getCurrentMessage() {
-        if(typeof getCurrentMessageId!=='function'||typeof getChatMessages!=='function') return null;
-        const d=getChatMessages(getCurrentMessageId()); return Array.isArray(d)?d[0]:d;
+        // 尝试在当前窗口或父窗口寻找 ST 接口
+        const ctx = (typeof window.getCurrentMessageId === 'function') ? window : 
+                   ((window.parent && typeof window.parent.getCurrentMessageId === 'function') ? window.parent : null);
+        
+        if (!ctx || typeof ctx.getChatMessages !== 'function') return null;
+        
+        const d = ctx.getChatMessages(ctx.getCurrentMessageId()); 
+        return Array.isArray(d) ? d[0] : d;
       }
       function hashStr(s) { let h=0; for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))|0; return h.toString(); }
       function parseStatusContent(c) {
@@ -687,7 +693,6 @@
       let _statusParseTimer=null, _isObserving=false;
       function execParseStatusBlock() {
         let content='';
-        if(window.STATUS_RAW_DATA) content = window.STATUS_RAW_DATA;
         try {
             const mObj = getCurrentMessage(), msg = (mObj && typeof mObj.message==='string') ? mObj.message : '';
             if(msg) {
@@ -715,7 +720,14 @@
             ['generation_ended','message_updated','chat_id_changed','message_sent'].forEach(e => evtSrc.on(e, trig));
             _isObserving = true; return;
         }
-        const chatRoot = document.getElementById('chat') || document.querySelector('.mes_text') || document.body;
+        
+        // Fallback: DOM Observer (check parent if in iframe)
+        let chatRoot = document.getElementById('chat') || document.querySelector('.mes_text');
+        if (!chatRoot && window.parent) {
+            try { chatRoot = window.parent.document.getElementById('chat') || window.parent.document.querySelector('.mes_text'); } catch(e){}
+        }
+        chatRoot = chatRoot || document.body;
+
         const obs = new MutationObserver(m => {
             if(_statusParseTimer) clearTimeout(_statusParseTimer);
             _statusParseTimer = setTimeout(execParseStatusBlock, 500);
