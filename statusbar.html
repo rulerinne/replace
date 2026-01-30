@@ -736,7 +736,7 @@
         _isObserving = true;
       }
 
-      document.addEventListener('DOMContentLoaded', () => {
+      const initApp = () => {
         replaceStaticIcons();
         applyStartupCollapseState(); applyFemaleAttireCols();
         applyPanelWidth(); applyPanelHeight(); applyTextScale(); applyTextWeight(); applyTextAlign();
@@ -746,6 +746,12 @@
                 const s=document.getElementById('settings-overlay'); if(s?.classList.contains('open')) toggleSettings();
             }
         });
-      });
+      };
+
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initApp);
+      } else {
+        initApp();
+      }
     </script>
   </body>
