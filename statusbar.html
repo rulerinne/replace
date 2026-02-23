@@ -800,10 +800,8 @@
         const g = document.getElementById(`role${i}-attire`); if(!g) return;
         const items = [['上衣','user'],['内衣','heart'],['裤子/裙子','bars'],['内裤','lock'],['袜子','tags'],['鞋子','shopping-bag']];
         g.innerHTML = items.map(([k,ico]) => {
-            let v = statusData[`${i}号角色${k}`];
-            if (!v && k === '裤子/裙子') {
-                v = statusData[`${i}号角色裤子`] || statusData[`${i}号角色裙子`];
-            }
+            const v = statusData[`${i}号角色${k}`];
+            
             // Always render the cell even if empty to maintain grid structure, or render empty cell
             return `<div class="attire-cell">
               <div class="attire-cell-label">${k}</div>
@@ -825,7 +823,53 @@
       }
       function hashStr(s) { let h=0; for(let i=0;i<s.length;i++) h=(h*31+s.charCodeAt(i))|0; return h.toString(); }
       function parseStatusContent(c) {
-        const d={}; c.split('\n').forEach(l=>{ const m=l.match(/^(.+?)：(.+)$/); if(m) d[m[1].trim()]=m[2].trim(); }); return d;
+        const d={}; 
+        let rolePrefix = null;
+        
+        // 归一化映射表：裤子/裙子/下装 -> 裤子/裙子
+        const keyMap = {
+            '裤子': '裤子/裙子',
+            '裙子': '裤子/裙子',
+            '下装': '裤子/裙子',
+            '裤子/裙子': '裤子/裙子'
+        };
+
+        c.split('\n').forEach(l=>{ 
+            const m=l.match(/^(.+?)：(.+)$/); 
+            if(m) {
+                let k=m[1].trim();
+                const v=m[2].trim();
+                
+                // 上下文切换
+                if (/^\d+号角色$/.test(k)) { 
+                    rolePrefix = k; 
+                    d[k] = v; 
+                    return; 
+                }
+                if (k === '读者角色') { 
+                    rolePrefix = null; 
+                    d[k] = v; 
+                    return; 
+                }
+                
+                // 全局字段检测（防止夹在角色信息中被错误加上前缀）
+                if (['地点', '时间', '天气'].includes(k)) {
+                    d[k] = v;
+                    return;
+                }
+
+                // 字段归一化
+                if (keyMap[k]) k = keyMap[k];
+                
+                // 应用上下文前缀
+                if (rolePrefix) { 
+                    d[rolePrefix + k] = v; 
+                } else { 
+                    d[k] = v; 
+                }
+            }
+        }); 
+        return d;
       }
 
       let _statusParseTimer=null, _isObserving=false;
