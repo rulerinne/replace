@@ -168,7 +168,7 @@
       }
       
       .tab-content-container { flex: 1; overflow: hidden; min-height: 0; position: relative; }
-      .tab-content { display: none; padding: 8px 10px; height: 100%; overflow-y: auto; box-sizing: border-box; scrollbar-gutter: stable; overscroll-behavior: contain; }
+      .tab-content { display: none; padding: 8px 10px; height: 100%; overflow-y: auto; box-sizing: border-box; scrollbar-gutter: stable; overscroll-behavior: auto; }
       .tab-content.active { display: block; animation: fadeIn 0.4s ease-out; }
       
       /* Scrollbar */
@@ -848,6 +848,43 @@
         setHTML(`role${i}-attire`, html);
       }
 
+      function canScrollAxis(el, delta, axis) {
+        if(!el || !delta) return false;
+        if(axis === 'y') {
+          if(el.scrollHeight <= el.clientHeight + 1) return false;
+          if(delta < 0) return el.scrollTop > 0;
+          return el.scrollTop + el.clientHeight < el.scrollHeight - 1;
+        }
+        if(el.scrollWidth <= el.clientWidth + 1) return false;
+        if(delta < 0) return el.scrollLeft > 0;
+        return el.scrollLeft + el.clientWidth < el.scrollWidth - 1;
+      }
+
+      function forwardWheelToOuter(deltaX, deltaY) {
+        if(window.parent && window.parent !== window) {
+          try {
+            window.parent.postMessage({ type: 'status-panel-wheel', deltaX, deltaY }, '*');
+            return;
+          } catch(e) {}
+        }
+        window.scrollBy({ left: deltaX, top: deltaY, behavior: 'auto' });
+      }
+
+      function installWheelPassthrough() {
+        if(window.__statusWheelPassthroughInstalled) return;
+        const panel = getStatusPanelEl() || document.querySelector('.status-panel');
+        if(!panel) return;
+        panel.addEventListener('wheel', (e) => {
+          const target = e.target instanceof Element ? e.target : null;
+          const scrollEl = target ? target.closest('.settings-sheet, .tab-content, .tabs-container') : null;
+          const canScrollY = canScrollAxis(scrollEl, e.deltaY, 'y');
+          const canScrollX = canScrollAxis(scrollEl, e.deltaX, 'x');
+          if(canScrollY || canScrollX) return;
+          forwardWheelToOuter(e.deltaX, e.deltaY);
+        }, { passive: true });
+        window.__statusWheelPassthroughInstalled = true;
+      }
+
       // Parser & Observer
       function getCurrentMessage() {
         // 尝试在当前窗口或父窗口寻找 ST 接口
@@ -960,6 +997,7 @@
         replaceStaticIcons();
         applyStartupCollapseState();
         applyPanelWidth(); applyTextScale(); applyTextWeight(); applyTextAlign();
+        installWheelPassthrough();
         execParseStatusBlock(); initObserver();
         document.addEventListener('keydown', e => {
             if(e.key==='Escape') { 
